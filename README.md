@@ -22,7 +22,7 @@ Apple's built-in "Optimized Battery Charging" is a black box — you can't see i
 
 ## Installation
 
-1. Go to the [Releases page](#).
+1. Go to the [Releases page](https://github.com/abhiswrld/glide-macos/releases/tag/v1.0.0).
 2. Download the latest `Glide.dmg`.
 3. Open the `.dmg` and drag **Glide** into your **Applications** folder.
 4. Launch Glide.
