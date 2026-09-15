@@ -1,0 +1,41 @@
+name: Glide
+options:
+  bundleIdPrefix: com.abhiswrld
+  deploymentTarget:
+    macOS: "15.0"
+packages:
+  GlideCore:
+    path: Packages/GlideCore
+targets:
+  Glide:
+    type: application
+    platform: macOS
+    sources:
+      - path: Glide
+    dependencies:
+      - package: GlideCore
+    info:
+      path: Glide/Info.plist
+      properties:
+        CFBundleDisplayName: Glide
+        LSMinimumSystemVersion: "15.0"
+    settings:
+      base:
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+  glide-daemon:
+    type: tool
+    platform: macOS
+    sources:
+      - path: glide-daemon
+    dependencies:
+      - package: GlideCore
+schemes:
+  Glide:
+    build:
+      targets:
+        Glide: all
+  glide-daemon:
+    build:
+      targets:
+        glide-daemon: all

@@ -1,0 +1,449 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 45641F6939027B2DEF38CA83 /* GlideCore */; };
+		40F3A55567E0C6A7FFD5FFC0 /* Glide.xcodeproj in Resources */ = {isa = PBXBuildFile; fileRef = EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */; };
+		5D76D856F44FB31563E88621 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA98551570C1BED4112FFBA /* main.swift */; };
+		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
+		CFD1718029E8158FA5FCE0CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18815CE4AB0CCE0DAAD899F /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5DA98551570C1BED4112FFBA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
+		CC6877DB6C77AE806FA83D49 /* GlideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GlideCore; path = Packages/GlideCore; sourceTree = SOURCE_ROOT; };
+		D18815CE4AB0CCE0DAAD899F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glide.xcodeproj; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C1A45032CBB16193099EB372 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8539963B8BD959F239CCBA3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C014BC68DBAB861750920BCF /* GlideCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0DBDD1188172043B6B135611 /* Glide */ = {
+			isa = PBXGroup;
+			children = (
+				D18815CE4AB0CCE0DAAD899F /* ContentView.swift */,
+				EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */,
+				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
+				3AE5532981419B04F2ECD2C8 /* Info.plist */,
+			);
+			path = Glide;
+			sourceTree = "<group>";
+		};
+		312EF3B35CFB1F7EA54E24EB /* glide-daemon */ = {
+			isa = PBXGroup;
+			children = (
+				5DA98551570C1BED4112FFBA /* main.swift */,
+			);
+			path = "glide-daemon";
+			sourceTree = "<group>";
+		};
+		94BA5C58C1A72FDC6E953004 = {
+			isa = PBXGroup;
+			children = (
+				0DBDD1188172043B6B135611 /* Glide */,
+				312EF3B35CFB1F7EA54E24EB /* glide-daemon */,
+				FC0B4AEF3CAB0ACBFBD8B625 /* Packages */,
+				F0257EE2523A968F22A93828 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AD4C3561305910FD00188E9F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F0257EE2523A968F22A93828 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				320F1CE0E9A5998B92E8527A /* glide-daemon */,
+				97C6EBB568AC2ADAFB1A70E0 /* Glide.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FC0B4AEF3CAB0ACBFBD8B625 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				CC6877DB6C77AE806FA83D49 /* GlideCore */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		936B9B754CEB2B9DB5C2DE7E /* Glide */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */;
+			buildPhases = (
+				CE014D1674B58123726B5048 /* Sources */,
+				A69B313BC2461CB831565779 /* Resources */,
+				C1A45032CBB16193099EB372 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Glide;
+			packageProductDependencies = (
+				45641F6939027B2DEF38CA83 /* GlideCore */,
+			);
+			productName = Glide;
+			productReference = 97C6EBB568AC2ADAFB1A70E0 /* Glide.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A07E9FC62EA4ADAFB75AC784 /* glide-daemon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B9E19FDE85D4C2E4F3D11866 /* Build configuration list for PBXNativeTarget "glide-daemon" */;
+			buildPhases = (
+				0A124AD1A9144DC16D3A69C8 /* Sources */,
+				C8539963B8BD959F239CCBA3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "glide-daemon";
+			packageProductDependencies = (
+				EDF212A382C5623164794346 /* GlideCore */,
+			);
+			productName = "glide-daemon";
+			productReference = 320F1CE0E9A5998B92E8527A /* glide-daemon */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B2C87CDC4AB5959E237BDBE6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					936B9B754CEB2B9DB5C2DE7E = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 71EC61E422414CCFC29A82A5 /* Build configuration list for PBXProject "Glide" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 94BA5C58C1A72FDC6E953004;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "Packages/GlideCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F0257EE2523A968F22A93828 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = AD4C3561305910FD00188E9F /* Products */;
+					ProjectRef = EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				936B9B754CEB2B9DB5C2DE7E /* Glide */,
+				A07E9FC62EA4ADAFB75AC784 /* glide-daemon */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A69B313BC2461CB831565779 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40F3A55567E0C6A7FFD5FFC0 /* Glide.xcodeproj in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0A124AD1A9144DC16D3A69C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D76D856F44FB31563E88621 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE014D1674B58123726B5048 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFD1718029E8158FA5FCE0CF /* ContentView.swift in Sources */,
+				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2D90AB4995AD19DF6C5CCA3F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3EAF8C6732278D539BA26AB9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		61166433CB4CA2132CB005D6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.abhiswrld.glide-daemon";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		613A63DB4BF8A372B6AE340A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Glide/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhiswrld.Glide;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		68380938107810EF2985E80E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Glide/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhiswrld.Glide;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		DCD37B3DFB2A39523E65521F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.abhiswrld.glide-daemon";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				613A63DB4BF8A372B6AE340A /* Debug */,
+				68380938107810EF2985E80E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		71EC61E422414CCFC29A82A5 /* Build configuration list for PBXProject "Glide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D90AB4995AD19DF6C5CCA3F /* Debug */,
+				3EAF8C6732278D539BA26AB9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B9E19FDE85D4C2E4F3D11866 /* Build configuration list for PBXNativeTarget "glide-daemon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCD37B3DFB2A39523E65521F /* Debug */,
+				61166433CB4CA2132CB005D6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "Packages/GlideCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/GlideCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		45641F6939027B2DEF38CA83 /* GlideCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GlideCore;
+		};
+		EDF212A382C5623164794346 /* GlideCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GlideCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B2C87CDC4AB5959E237BDBE6 /* Project object */;
+}
