@@ -9,21 +9,23 @@
 /* Begin PBXBuildFile section */
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
 		1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 45641F6939027B2DEF38CA83 /* GlideCore */; };
-		40F3A55567E0C6A7FFD5FFC0 /* Glide.xcodeproj in Resources */ = {isa = PBXBuildFile; fileRef = EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */; };
 		5D76D856F44FB31563E88621 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA98551570C1BED4112FFBA /* main.swift */; };
+		9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */; };
+		B04825846C04D5BA7054E348 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC445FCAFDC22D82E247149 /* AppDelegate.swift */; };
+		BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65487F46BEC14BC4D2962A39 /* PopoverView.swift */; };
 		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
-		CFD1718029E8158FA5FCE0CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18815CE4AB0CCE0DAAD899F /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
+		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5DA98551570C1BED4112FFBA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		65487F46BEC14BC4D2962A39 /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
 		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
 		CC6877DB6C77AE806FA83D49 /* GlideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GlideCore; path = Packages/GlideCore; sourceTree = SOURCE_ROOT; };
-		D18815CE4AB0CCE0DAAD899F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glide.xcodeproj; sourceTree = "<group>"; };
+		E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryModel.swift; sourceTree = "<group>"; };
+		FBC445FCAFDC22D82E247149 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,10 +51,11 @@
 		0DBDD1188172043B6B135611 /* Glide */ = {
 			isa = PBXGroup;
 			children = (
-				D18815CE4AB0CCE0DAAD899F /* ContentView.swift */,
-				EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */,
+				FBC445FCAFDC22D82E247149 /* AppDelegate.swift */,
+				E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */,
 				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
 				3AE5532981419B04F2ECD2C8 /* Info.plist */,
+				65487F46BEC14BC4D2962A39 /* PopoverView.swift */,
 			);
 			path = Glide;
 			sourceTree = "<group>";
@@ -73,13 +76,6 @@
 				FC0B4AEF3CAB0ACBFBD8B625 /* Packages */,
 				F0257EE2523A968F22A93828 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		AD4C3561305910FD00188E9F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		F0257EE2523A968F22A93828 /* Products */ = {
@@ -107,7 +103,6 @@
 			buildConfigurationList = 136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */;
 			buildPhases = (
 				CE014D1674B58123726B5048 /* Sources */,
-				A69B313BC2461CB831565779 /* Resources */,
 				C1A45032CBB16193099EB372 /* Frameworks */,
 			);
 			buildRules = (
@@ -170,12 +165,6 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F0257EE2523A968F22A93828 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = AD4C3561305910FD00188E9F /* Products */;
-					ProjectRef = EE20031F001CB915B4FCBC2F /* Glide.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				936B9B754CEB2B9DB5C2DE7E /* Glide */,
@@ -183,17 +172,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		A69B313BC2461CB831565779 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				40F3A55567E0C6A7FFD5FFC0 /* Glide.xcodeproj in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0A124AD1A9144DC16D3A69C8 /* Sources */ = {
@@ -208,8 +186,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFD1718029E8158FA5FCE0CF /* ContentView.swift in Sources */,
+				B04825846C04D5BA7054E348 /* AppDelegate.swift in Sources */,
+				9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */,
 				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
+				BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
