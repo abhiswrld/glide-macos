@@ -1,149 +1,188 @@
-//
-//  SMC.swift
-//  GlideCore
-//
-//  Created by Abhinav on 9/14/26.
-//
-
 import Foundation
 import IOKit
 
-/// AppleSMC user-client client.
-/// The kernel ABI (a ~84-96 byte struct whose field offsets vary by variant)
-/// is discovered at runtime instead of hardcoded.
-public enum SMC {
+/// AppleSMC user client — direct port of the SMCKeyData_t struct + call
+/// sequence used by smcFanControl / Stats. layout (84 bytes):
+/// 0 key · 4 vers · 12 pLimit · 28 keyInfo.dataSize · 32 keyInfo.dataType ·
+/// 40 pad · 42 result · 43 status · 44 data8(command) · 48 data32 · 52 bytes[32]
+public final class SMCClient {
 
-    public struct ABI: Sendable {
-        let size: Int
-        let dataSizeOffset: Int
-        let dataTypeOffset: Int
-        let cmdOffset: Int
-        let bytesOffset: Int
-    }
+    public enum SMCError: Error, CustomStringConvertible {
+        case notOpen
+        case badKey
+        case iokit(kern_return_t)
+        case smcStatus(UInt8)
 
-    private static let selector: UInt32 = 2
-
-    nonisolated(unsafe) private static var conn: io_connect_t = 0
-    nonisolated(unsafe) private static var cachedABI: ABI?
-    nonisolated(unsafe) private static var discoveryFailed = false
-
-    private static func connection() -> io_connect_t? {
-        if conn != 0 { return conn }
-        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSMC"))
-        guard service != IO_OBJECT_NULL else { return nil }
-        defer { IOObjectRelease(service) }
-        var c: io_connect_t = 0
-        guard IOServiceOpen(service, mach_task_self_, 0, &c) == KERN_SUCCESS else { return nil }
-        var openOut = 0
-        guard IOConnectCallStructMethod(c, 0, nil, 0, nil, &openOut) == KERN_SUCCESS else {
-            IOServiceClose(c)
-            return nil
+        public var description: String {
+            switch self {
+            case .notOpen: return "SMC connection not open"
+            case .badKey: return "bad key (need exactly 4 chars)"
+            case .iokit(let kr): return "IOKit error 0x\(String(UInt32(bitPattern: kr), radix: 16))"
+            case .smcStatus(let s): return "SMC rejected (status 0x\(String(s, radix: 16)))"
+            }
         }
-        conn = c
-        return conn
     }
 
-    private static func call(_ buf: [UInt8]) -> (kr: kern_return_t, out: [UInt8]) {
-        guard let c = connection() else { return (KERN_FAILURE, []) }
-        var out = [UInt8](repeating: 0, count: buf.count)
-        var outSize = buf.count
-        let kr: kern_return_t = buf.withUnsafeBytes { inRaw in
-            out.withUnsafeMutableBytes { outRaw in
+    public struct Value {
+        public let key: String
+        public let type: String
+        public let bytes: [UInt8]
+    }
+
+    private enum Command {
+        static let readBytes: UInt8 = 5
+        static let writeBytes: UInt8 = 6
+        static let readKeyInfo: UInt8 = 9
+    }
+    private static let kernelIndex: UInt32 = 2
+
+    private typealias Bytes32 = (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+                                 UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+                                 UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
+                                 UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)
+
+    private struct KeyInfoData {
+        var dataSize: IOByteCount32 = 0
+        var dataType: UInt32 = 0
+        var dataAttributes: UInt8 = 0
+    }
+
+    private struct SMCKeyData {
+        var key: UInt32 = 0
+        var versMajor: UInt8 = 0
+        var versMinor: UInt8 = 0
+        var versBuild: UInt8 = 0
+        var versReserved: UInt8 = 0
+        var versRelease: UInt16 = 0
+        var pLimitVersion: UInt16 = 0
+        var pLimitLength: UInt16 = 0
+        var cpuPLimit: UInt32 = 0
+        var gpuPLimit: UInt32 = 0
+        var memPLimit: UInt32 = 0
+        var keyInfo = KeyInfoData()
+        var padding: UInt16 = 0
+        var result: UInt8 = 0
+        var status: UInt8 = 0
+        var data8: UInt8 = 0
+        var data32: UInt32 = 0
+        var bytes: Bytes32 = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    }
+
+    private var conn: io_connect_t = 0
+    private let lock = NSLock()
+
+    public init() throws {
+        var iterator: io_iterator_t = 0
+        let kr = IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("AppleSMC"), &iterator)
+        guard kr == KERN_SUCCESS else { throw SMCError.iokit(kr) }
+        defer { IOObjectRelease(iterator) }
+        let device = IOIteratorNext(iterator)
+        guard device != IO_OBJECT_NULL else { throw SMCError.notOpen }
+        var c: io_connect_t = 0
+        let krOpen = IOServiceOpen(device, mach_task_self_, 0, &c)
+        IOObjectRelease(device)
+        guard krOpen == KERN_SUCCESS else { throw SMCError.iokit(krOpen) }
+        conn = c
+    }
+
+    deinit {
+        if conn != 0 { IOServiceClose(conn) }
+    }
+
+    private func call(_ input: inout SMCKeyData, _ output: inout SMCKeyData) throws {
+        lock.lock()
+        defer { lock.unlock() }
+        let size = MemoryLayout<SMCKeyData>.stride
+        var outputSize = size
+        let kr: kern_return_t = withUnsafeBytes(of: input) { inRaw in
+            withUnsafeMutableBytes(of: &output) { outRaw in
                 IOConnectCallStructMethod(
-                    c, selector,
-                    inRaw.bindMemory(to: UInt8.self).baseAddress, buf.count,
-                    outRaw.bindMemory(to: UInt8.self).baseAddress, &outSize
+                    conn, Self.kernelIndex,
+                    inRaw.bindMemory(to: UInt8.self).baseAddress, size,
+                    outRaw.bindMemory(to: UInt8.self).baseAddress, &outputSize
                 )
             }
         }
-        return (kr, out)
+        guard kr == KERN_SUCCESS else { throw SMCError.iokit(kr) }
+        guard output.result == 0 else { throw SMCError.smcStatus(output.result) }
     }
 
-    /// try (structSize, cmdOffset) combos against "#KEY" until one returns a
-    /// valid keyinfo response, then confirm with a real value read.
-    public static func discoverABI(verbose: Bool = false) -> ABI? {
-        if let cachedABI { return cachedABI }
-        if discoveryFailed && !verbose { return nil }
-        guard connection() != nil else { return nil }
+    public func readKey(_ key: String) throws -> Value {
+        guard key.count == 4 else { throw SMCError.badKey }
+        var input = SMCKeyData()
+        var output = SMCKeyData()
 
-        let sizes = [88, 84, 96, 92, 80, 64]
-        let cmds = [51, 47, 55, 43, 59, 39]
+        input.key = Self.fourCC(key)
+        input.data8 = Command.readKeyInfo
+        try call(&input, &output)
 
-        for size in sizes {
-            for cmd in cmds where cmd + 12 < size {
-                var buf = [UInt8](repeating: 0, count: size)
-                pack("#KEY", into: &buf)
-                buf[cmd] = 9              // SMC_CMD_READ_KEYINFO
-                let r = call(buf)
-                if verbose {
-                    print("probe size=\(size) cmd=\(cmd) kr=0x\(String(UInt32(bitPattern: r.kr), radix: 16))")
-                }
-                guard r.kr == KERN_SUCCESS else { continue }
+        let dataSize = Int(output.keyInfo.dataSize)
+        let type = Self.typeString(output.keyInfo.dataType)
+        guard (1...32).contains(dataSize) else { throw SMCError.smcStatus(output.status) }
 
-                // response signature: dataSize(1-32) at X-4, 4 printable ASCII
-                // type chars at X, result byte == 0 a few bytes later
-                for typeOff in 24..<min(64, size - 8) {
-                    let ds = Int(le32(r.out, at: typeOff - 4))
-                    let sig = r.out[typeOff..<typeOff + 4]
-                    let resultByte = typeOff + 5 < size ? r.out[typeOff + 5] : 0xFF
-                    guard (1...32).contains(ds),
-                          sig.allSatisfy({ (0x20...0x7E).contains($0) }),
-                          resultByte == 0
-                    else { continue }
+        input.keyInfo.dataSize = output.keyInfo.dataSize
+        input.data8 = Command.readBytes
+        try call(&input, &output)
 
-                    let data8 = typeOff + 7
-                    guard data8 == cmd else { continue }
-                    let bytesOff = align4(data8 + 1) + 4
-                    guard bytesOff + 32 <= size else { continue }
+        let all = withUnsafeBytes(of: output.bytes) { Array($0) }
+        return Value(key: key, type: type, bytes: Array(all.prefix(dataSize)))
+    }
 
-                    let abi = ABI(size: size, dataSizeOffset: typeOff - 4,
-                                  dataTypeOffset: typeOff, cmdOffset: data8,
-                                  bytesOffset: bytesOff)
+    /// writes require the process to run as root
+    public func writeKey(_ key: String, bytes: [UInt8]) throws {
+        guard key.count == 4, (1...32).contains(bytes.count) else { throw SMCError.badKey }
+        var input = SMCKeyData()
+        var output = SMCKeyData()
 
-                    // end-to-end check: #KEY holds the number of SMC keys
-                    if let v = readUInt32("#KEY", abi: abi), (50...20000).contains(v) {
-                        if verbose { print("ABI found: size=\(size) cmd=\(cmd) typeOff=\(typeOff) #KEY=\(v)") }
-                        cachedABI = abi
-                        return abi
-                    }
-                }
-            }
+        input.key = Self.fourCC(key)
+        input.keyInfo.dataSize = IOByteCount32(bytes.count)
+        input.data8 = Command.writeBytes
+        withUnsafeMutableBytes(of: &input.bytes) { raw in
+            raw.copyBytes(from: bytes)
         }
-        discoveryFailed = true
-        return nil
+        try call(&input, &output)
     }
 
-    private static func readRaw(_ key: String, abi: ABI) -> (type: String, data: [UInt8])? {
-        guard key.count == 4 else { return nil }
+    public func doubleValue(_ v: Value) -> Double? {
+        let b = v.bytes
+        switch v.type {
+        case "ui8 ", "flag": return b.isEmpty ? nil : Double(b[0])
+        case "ui16": return b.count >= 2 ? Double(UInt16(b[0]) << 8 | UInt16(b[1])) : nil
+        case "ui32": return b.count >= 4 ? Double(UInt32(b[0]) << 24 | UInt32(b[1]) << 16 | UInt32(b[2]) << 8 | UInt32(b[3])) : nil
+        case "sp78": return b.count >= 2 ? Double(Int8(bitPattern: b[0])) + Double(b[1]) / 256 : nil
+        case "flt ":
+            guard b.count >= 4 else { return nil }
+            let u = UInt32(b[0]) | UInt32(b[1]) << 8 | UInt32(b[2]) << 16 | UInt32(b[3]) << 24
+            let f = Float(bitPattern: u)
+            return f.isFinite ? Double(f) : nil
+        default: return nil
+        }
+    }
 
-        var buf = [UInt8](repeating: 0, count: abi.size)
-        pack(key, into: &buf)
-        buf[abi.cmdOffset] = 9
-        let r1 = call(buf)
-        guard r1.kr == KERN_SUCCESS, r1.out[abi.cmdOffset - 2] == 0 else { return nil }
-        let ds = Int(le32(r1.out, at: abi.dataSizeOffset))
-        guard (1...32).contains(ds) else { return nil }
-        let type = String(bytes: r1.out[abi.dataTypeOffset..<abi.dataTypeOffset + 4],
-                          encoding: .ascii) ?? "????"
+    private static func fourCC(_ s: String) -> UInt32 {
+        s.utf8.reduce(0) { $0 << 8 | UInt32($1) }
+    }
+    private static func typeString(_ v: UInt32) -> String {
+        let b = [UInt8((v >> 24) & 0xFF), UInt8((v >> 16) & 0xFF), UInt8((v >> 8) & 0xFF), UInt8(v & 0xFF)]
+        return String(bytes: b, encoding: .ascii) ?? "????"
+    }
+}
 
-        var buf2 = [UInt8](repeating: 0, count: abi.size)
-        pack(key, into: &buf2)
-        writeLE32(ds, at: abi.dataSizeOffset, into: &buf2)
-        buf2[abi.cmdOffset] = 5         // SMC_CMD_READ_BYTES
-        let r2 = call(buf2)
-        guard r2.kr == KERN_SUCCESS, r2.out[abi.cmdOffset - 2] == 0 else { return nil }
+/// static facade so app + daemon can share one lazy client
+public enum SMC {
+    nonisolated(unsafe) private static var _client: SMCClient?
+    nonisolated(unsafe) private static let _lock = NSLock()
 
-        return (type, Array(r2.out[abi.bytesOffset..<abi.bytesOffset + ds]))
+    static func client() -> SMCClient? {
+        _lock.lock()
+        defer { _lock.unlock() }
+        if _client == nil { _client = try? SMCClient() }
+        return _client
     }
 
     public static func temperatureC(_ key: String) -> Double? {
-        guard let abi = discoverABI(),
-              let r = readRaw(key, abi: abi),
-              r.data.count >= 2,
-              r.type.contains("78")      // sp78 (or its byte-reversed twin)
-        else { return nil }
-        let v = Double(Int8(bitPattern: r.data[0])) + Double(r.data[1]) / 256.0
-        return (0...120).contains(v) ? v : nil
+        guard let c = client(), let v = try? c.readKey(key) else { return nil }
+        return c.doubleValue(v)
     }
 
     public static func batteryTemperatureC() -> Double? {
@@ -154,65 +193,18 @@ public enum SMC {
     }
 
     public static func probe(_ key: String) -> String {
-        guard let abi = discoverABI() else { return "abi discovery failed" }
-        guard let r = readRaw(key, abi: abi) else { return "no response (key missing or rejected)" }
-        let hex = r.data.map { String(format: "%02x", $0) }.joined(separator: " ")
-        var s = "type=\(r.type) data[\(r.data.count)]=\(hex)"
-        if r.type.contains("78"), r.data.count >= 2 {
-            let v = Double(Int8(bitPattern: r.data[0])) + Double(r.data[1]) / 256.0
-            s += String(format: " -> %.1f°C", v)
-        }
-        return s
-    }
-
-    public static func abiDescription() -> String {
-        if connection() == nil { return "no AppleSMC connection" }
-        guard let a = discoverABI(verbose: true) else {
-            return "SMC ABI discovery FAILED - probe trace above"
-        }
-        return "SMC ABI: struct=\(a.size)B cmd@\(a.cmdOffset) dataSize@\(a.dataSizeOffset) dataType@\(a.dataTypeOffset) bytes@\(a.bytesOffset)"
-    }
-
-    private static func readUInt32(_ key: String, abi: ABI) -> Int? {
-        guard let r = readRaw(key, abi: abi), r.data.count == 4 else { return nil }
-        return Int(le32(r.data, at: 0))
-    }
-    
-    /// one-shot struct call with an arbitrary selector — probing only
-    public static func rawStructCall(_ selector: UInt32, input: [UInt8]) -> (kr: kern_return_t, out: [UInt8]) {
-        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSMC"))
-        guard service != IO_OBJECT_NULL else { return (KERN_FAILURE, []) }
-        defer { IOObjectRelease(service) }
-        var c: io_connect_t = 0
-        guard IOServiceOpen(service, mach_task_self_, 0, &c) == KERN_SUCCESS else { return (KERN_FAILURE, []) }
-        defer { IOServiceClose(c) }
-
-        var out = [UInt8](repeating: 0, count: input.count)
-        var outSize = out.count
-        let kr: kern_return_t = input.withUnsafeBytes { inRaw in
-            out.withUnsafeMutableBytes { outRaw in
-                IOConnectCallStructMethod(
-                    c, selector,
-                    inRaw.bindMemory(to: UInt8.self).baseAddress, input.count,
-                    outRaw.bindMemory(to: UInt8.self).baseAddress, &outSize
-                )
+        guard let c = client() else { return "no AppleSMC connection" }
+        do {
+            let v = try c.readKey(key)
+            let hex = v.bytes.map { String(format: "%02x", $0) }.joined(separator: " ")
+            var s = "type=\(v.type) data[\(v.bytes.count)]=\(hex)"
+            if let d = c.doubleValue(v) { s += " -> \(d)" }
+            return s
+        } catch {
+            if case SMCClient.SMCError.smcStatus(let st) = error {
+                return "SMC rejected (status 0x\(String(st, radix: 16))) — key missing?"
             }
+            return "error: \(error)"
         }
-        return (kr, kr == KERN_SUCCESS ? out : [])
     }
-
-    private static func pack(_ key: String, into buf: inout [UInt8]) {
-        let bytes = Array(key.utf8)
-        for i in 0..<4 { buf[i] = i < bytes.count ? bytes[i] : 0 }
-    }
-    private static func le32(_ buf: [UInt8], at o: Int) -> UInt32 {
-        UInt32(buf[o]) | UInt32(buf[o + 1]) << 8 | UInt32(buf[o + 2]) << 16 | UInt32(buf[o + 3]) << 24
-    }
-    private static func writeLE32(_ v: Int, at o: Int, into buf: inout [UInt8]) {
-        buf[o] = UInt8(v & 0xFF)
-        buf[o + 1] = UInt8((v >> 8) & 0xFF)
-        buf[o + 2] = UInt8((v >> 16) & 0xFF)
-        buf[o + 3] = UInt8((v >> 24) & 0xFF)
-    }
-    private static func align4(_ v: Int) -> Int { (v + 3) & ~3 }
 }
