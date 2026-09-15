@@ -14,3 +14,8 @@
 - ChargeLimiter in GlideCore: CFPreferences write + darwin doorbell, no shell-outs
 - validated 60/85/90 set+enforce from our own binary; local validation rejects non-detents (73)
 - next: launchd daemon + XPC, then slider in popover
+
+## Session — the daemon
+- glide-daemon as launchd service (com.abhiswrld.glide.daemon), KeepAlive, RunAtLoad
+- XPC listener + CLI modes; full round trip verified without sudo (ping/getLimit/setLimit)
+- next: slider in the popover wired to the daemon
