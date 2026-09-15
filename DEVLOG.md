@@ -9,3 +9,8 @@
 - NSStatusItem + popover, SwiftUI content, LSUIElement (no dock icon)
 - BatteryReader in GlideCore: charge, cycles, health, temp, watts via AppleSmartBattery
 - raw-key debug dump in the popover (stays until the daemon lands)
+
+## Session — got the lever to work
+- ChargeLimiter in GlideCore: CFPreferences write + darwin doorbell, no shell-outs
+- validated 60/85/90 set+enforce from our own binary; local validation rejects non-detents (73)
+- next: launchd daemon + XPC, then slider in popover

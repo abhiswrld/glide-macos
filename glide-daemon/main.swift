@@ -1,59 +1,33 @@
 import Foundation
 import GlideCore
 
-guard geteuid() == 0 else {
-    print("run with sudo")
-    exit(1)
-}
+let args = Array(CommandLine.arguments.dropFirst())
 
-guard let smc = SMC.shared else {
-    print("no SMC connection")
-    exit(1)
-}
-
-func chltHex() -> String {
-    guard let v = try? smc.readKey("CHLT"), v.bytes.count >= 3 else { return "??" }
-    return v.bytes.prefix(3).map { String(format: "%02x", $0) }.joined(separator: " ")
-}
-
-func report(_ label: String) {
-    let b = BatteryReader.read()
-    print("\(label): battery=\(b.percent)% charging=\(b.isCharging) CHLT=[\(chltHex())]")
-}
-
-report("before        ")
-
-guard let v = try? smc.readKey("CHLT"), v.bytes.count >= 3 else {
-    print("cannot read CHLT")
-    exit(1)
-}
-let original = Array(v.bytes.prefix(3))
-print("saving original: \(original.map { String(format: "%02x", $0) }.joined(separator: " "))")
-
-var raised = original
-raised[0] = 0x5a   // limit 90
-
-do {
-    try smc.writeKey("CHLT", bytes: raised)
-    print("wrote limit=90 to CHLT")
-} catch {
-    print("CHLT write REJECTED: \(error)")
-    exit(1)
-}
-
-for i in 1...5 {
-    Thread.sleep(forTimeInterval: 4)
-    report("t+\(i * 4)s     ")
-}
-
-do {
-    try smc.writeKey("CHLT", bytes: original)
-    print("restored original CHLT")
-} catch {
-    print("RESTORE FAILED — open Settings and drag the charge slider to 85, apple rewrites everything cleanly: \(error)")
-}
-
-for i in 1...3 {
-    Thread.sleep(forTimeInterval: 4)
-    report("restored +\(i * 4)s")
+switch args.first {
+case "set":
+    guard geteuid() == 0 else { print("run with sudo"); exit(1) }
+    guard let value = Int(args.count > 1 ? args[1] : "") else {
+        print("usage: sudo glide-daemon set <60-100, step 5>")
+        exit(1)
+    }
+    do {
+        try ChargeLimiter.setLimit(value)
+        print("limit set to \(value)% — doorbell rung")
+    } catch {
+        print("failed: \(error)")
+        exit(1)
+    }
+case "limit":
+    if let limit = ChargeLimiter.readLimit() {
+        print("current limit: \(limit)%")
+    } else {
+        print("no limit readable (run with sudo)")
+    }
+default:
+    print("""
+    glide-daemon \(GlideCore.version)
+    usage:
+      sudo glide-daemon set <60-100, step 5>   set charge limit
+      sudo glide-daemon limit                  read current limit
+    """)
 }
