@@ -142,6 +142,30 @@ public final class SMCClient {
         }
         try call(&input, &output)
     }
+    
+    /// every key name in the firmware, via READ_INDEX
+    public func allKeys() -> [String] {
+        var out: [String] = []
+        var index: UInt32 = 0
+        while true {
+            var input = SMCKeyData()
+            var output = SMCKeyData()
+            input.key = Self.fourCC("#KEY")
+            input.data8 = 8          // READ_INDEX
+            input.data32 = index
+            do {
+                try call(&input, &output)
+            } catch {
+                break   // out of range = done
+            }
+            let all = withUnsafeBytes(of: output.bytes) { Array($0) }
+            let name = String(bytes: all.prefix(4), encoding: .ascii) ?? ""
+            if name.trimmingCharacters(in: .whitespaces).isEmpty { break }
+            out.append(name)
+            index += 1
+        }
+        return out
+    }
 
     public func doubleValue(_ v: Value) -> Double? {
         let b = v.bytes
@@ -171,7 +195,7 @@ public final class SMCClient {
 /// static facade so app + daemon can share one lazy client
 public enum SMC {
     nonisolated(unsafe) private static var _client: SMCClient?
-    nonisolated(unsafe) private static let _lock = NSLock()
+    private static let _lock = NSLock()
 
     static func client() -> SMCClient? {
         _lock.lock()
@@ -180,6 +204,8 @@ public enum SMC {
         return _client
     }
 
+    public static var shared: SMCClient? { client() }
+    
     public static func temperatureC(_ key: String) -> Double? {
         guard let c = client(), let v = try? c.readKey(key) else { return nil }
         return c.doubleValue(v)
