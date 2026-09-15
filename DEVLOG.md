@@ -19,3 +19,7 @@
 - glide-daemon as launchd service (com.abhiswrld.glide.daemon), KeepAlive, RunAtLoad
 - XPC listener + CLI modes; full round trip verified without sudo (ping/getLimit/setLimit)
 - next: slider in the popover wired to the daemon
+
+## Session — the slider
+- popover charge-limit slider wired to the daemon over XPC: drag → setLimit → Apple's UI is next
+- presets, live daemon status, drag-end commit (one XPC call per gesture)

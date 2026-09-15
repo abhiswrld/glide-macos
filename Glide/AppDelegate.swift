@@ -14,17 +14,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
     private let model = BatteryModel()
+    private let daemon = DaemonModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.target = self
         item.button?.action = #selector(togglePopover)
         statusItem = item
+        DaemonModel.shared = daemon
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 340, height: 460)
+        popover.contentSize = NSSize(width: 340, height: 540)
         popover.contentViewController = NSHostingController(
-            rootView: PopoverView().environmentObject(model)
+            rootView: PopoverView().environmentObject(model).environmentObject(daemon)
         )
 
         model.onUpdate = { [weak self] snapshot in

@@ -10,18 +10,23 @@
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
 		1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 45641F6939027B2DEF38CA83 /* GlideCore */; };
 		5D76D856F44FB31563E88621 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA98551570C1BED4112FFBA /* main.swift */; };
+		93C0F641FAB7C997E2FC8DB6 /* CACHEDIR.TAG in Resources */ = {isa = PBXBuildFile; fileRef = 82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */; };
 		9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */; };
 		B04825846C04D5BA7054E348 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC445FCAFDC22D82E247149 /* AppDelegate.swift */; };
 		BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65487F46BEC14BC4D2962A39 /* PopoverView.swift */; };
+		BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4770F766204478158D10279C /* DaemonModel.swift */; };
 		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4770F766204478158D10279C /* DaemonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonModel.swift; sourceTree = "<group>"; };
 		5DA98551570C1BED4112FFBA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		65487F46BEC14BC4D2962A39 /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
+		82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */ = {isa = PBXFileReference; path = CACHEDIR.TAG; sourceTree = "<group>"; };
 		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C19E4AB8898F4727573A84A5 /* .buildSystem_debug */ = {isa = PBXFileReference; path = .buildSystem_debug; sourceTree = "<group>"; };
 		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
 		CC6877DB6C77AE806FA83D49 /* GlideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GlideCore; path = Packages/GlideCore; sourceTree = SOURCE_ROOT; };
 		E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryModel.swift; sourceTree = "<group>"; };
@@ -53,6 +58,7 @@
 			children = (
 				FBC445FCAFDC22D82E247149 /* AppDelegate.swift */,
 				E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */,
+				4770F766204478158D10279C /* DaemonModel.swift */,
 				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
 				3AE5532981419B04F2ECD2C8 /* Info.plist */,
 				65487F46BEC14BC4D2962A39 /* PopoverView.swift */,
@@ -64,8 +70,18 @@
 			isa = PBXGroup;
 			children = (
 				5DA98551570C1BED4112FFBA /* main.swift */,
+				7E9A1130D2FC1BDCD8080CF9 /* .build */,
 			);
 			path = "glide-daemon";
+			sourceTree = "<group>";
+		};
+		7E9A1130D2FC1BDCD8080CF9 /* .build */ = {
+			isa = PBXGroup;
+			children = (
+				C19E4AB8898F4727573A84A5 /* .buildSystem_debug */,
+				82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */,
+			);
+			path = .build;
 			sourceTree = "<group>";
 		};
 		94BA5C58C1A72FDC6E953004 = {
@@ -122,6 +138,7 @@
 			buildConfigurationList = B9E19FDE85D4C2E4F3D11866 /* Build configuration list for PBXNativeTarget "glide-daemon" */;
 			buildPhases = (
 				0A124AD1A9144DC16D3A69C8 /* Sources */,
+				E12B63EB60A77D0ECAF07E24 /* Resources */,
 				C8539963B8BD959F239CCBA3 /* Frameworks */,
 			);
 			buildRules = (
@@ -173,6 +190,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E12B63EB60A77D0ECAF07E24 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				93C0F641FAB7C997E2FC8DB6 /* CACHEDIR.TAG in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0A124AD1A9144DC16D3A69C8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -188,6 +216,7 @@
 			files = (
 				B04825846C04D5BA7054E348 /* AppDelegate.swift in Sources */,
 				9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */,
+				BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */,
 				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
 				BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */,
 			);

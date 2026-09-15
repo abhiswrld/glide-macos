@@ -1,21 +1,19 @@
-//
-//  PopoverView.swift
-//  Glide
-//
-//  Created by Abhinav on 9/14/26.
-//
-
 import SwiftUI
 import GlideCore
 
 struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
+    @EnvironmentObject var daemon: DaemonModel
+
+    @State private var draggingLimit: Double?
 
     var body: some View {
         ScrollView {
             if let s = model.snapshot {
                 VStack(alignment: .leading, spacing: 14) {
                     header(s)
+                    Divider()
+                    limitSection
                     Divider()
                     statGrid(s)
                     Divider()
@@ -26,8 +24,55 @@ struct PopoverView: View {
                 ProgressView("reading battery…").padding(30)
             }
         }
-        .frame(width: 340, height: 460)
+        .frame(width: 340, height: 540)
         .preferredColorScheme(.dark)
+        .onAppear { daemon.connect() }
+    }
+
+    private var limitSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("CHARGE LIMIT").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Spacer()
+                if let limit = daemon.limit {
+                    Text("\(limit)%").font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(.mint)
+                } else {
+                    Label("daemon offline", systemImage: "bolt.slash")
+                        .font(.caption.weight(.medium)).foregroundStyle(.orange)
+                }
+            }
+
+            if let limit = daemon.limit {
+                Slider(
+                    value: Binding(
+                        get: { draggingLimit ?? Double(limit) },
+                        set: { draggingLimit = $0 }
+                    ),
+                    in: 60...100,
+                    step: 5
+                ) { editing in
+                    if !editing, let v = draggingLimit {
+                        daemon.setLimit(Int(v))
+                        draggingLimit = nil
+                    }
+                }
+                HStack {
+                    Text("60").font(.caption2).foregroundStyle(.secondary)
+                    Spacer()
+                    ForEach([80, 85, 90, 100], id: \.self) { preset in
+                        Button("\(preset)%") { daemon.setLimit(preset) }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(preset == daemon.limit ? .mint : .secondary)
+                    }
+                    Spacer()
+                    Text("100").font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+
+            if let err = daemon.lastError {
+                Text(err).font(.caption2).foregroundStyle(.red)
+            }
+        }
     }
 
     private func header(_ s: BatterySnapshot) -> some View {
@@ -48,7 +93,7 @@ struct PopoverView: View {
         var parts: [String] = []
         if s.isFull { parts.append("full") }
         else if s.isCharging { parts.append("charging") }
-        else if s.isPluggedIn { parts.append("on AC") }
+        else if s.isPluggedIn { parts.append("on AC · holding") }
         else { parts.append("on battery") }
         if let t = s.temperatureC { parts.append(String(format: "%.1f°C", t)) }
         return parts.joined(separator: " · ")
