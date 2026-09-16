@@ -59,11 +59,14 @@ struct PopoverView: View {
     @State private var draggingLimit: Double?
     @State private var selectedTab: GlideTab = .battery
     @State private var draggingSailingLimit: Double?
+    @State private var draggingHeatThreshold: Double?
 
     @AppStorage("sailingEnabled") private var sailingEnabled: Bool = false
     @AppStorage("sailingLowerLimit") private var sailingLowerLimit: Int = 75
     @AppStorage("isSailing") private var isSailing: Bool = false
     @AppStorage("heatProtectionEnabled") private var heatProtectionEnabled: Bool = false
+    @AppStorage("heatProtectionThreshold") private var heatProtectionThreshold: Int = 35
+    @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
     @AppStorage("forceDischargeEnabled") private var forceDischargeEnabled: Bool = false
     @AppStorage("primaryChargeLimit") private var primaryChargeLimit: Int = 80
     var body: some View {
@@ -173,13 +176,17 @@ struct PopoverView: View {
         }
     }
 
+    @AppStorage("isHeatProtecting") private var isHeatProtecting: Bool = false
+
     @ViewBuilder
     private func stateLabel(_ s: BatterySnapshot) -> some View {
         let targetLimit = primaryChargeLimit
         let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
 
         Group {
-            if isSailing {
+            if isHeatProtecting {
+                statePill("Cooling", icon: "thermometer.sun.fill", color: GlideTheme.signalRed)
+            } else if isSailing {
                 statePill("Sailing", icon: "wind", color: GlideTheme.blue)
             } else if isEffectivelyCharging {
                 statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen, pulse: true)
@@ -518,9 +525,43 @@ struct PopoverView: View {
                     icon: "thermometer.sun.fill",
                     iconColor: GlideTheme.orange,
                     label: "Heat Protection",
-                    subtitle: "Pause charging above 37°C",
+                    subtitle: "Pause charging when hot",
                     isOn: $heatProtectionEnabled
                 )
+                
+                if heatProtectionEnabled {
+                    HStack {
+                        Spacer().frame(width: 40)
+                        
+                        let sliderVal = draggingHeatThreshold ?? Double(heatProtectionThreshold)
+                        let displayVal = temperatureUnit == "F" ? Int(sliderVal * 9/5 + 32) : Int(sliderVal)
+                        
+                        ThickSlider(
+                            value: Binding(
+                                get: { sliderVal },
+                                set: { draggingHeatThreshold = $0 }
+                            ),
+                            range: 30...40,
+                            step: 1,
+                            fillStyle: AnyShapeStyle(GlideTheme.orange),
+                            onEditingChanged: { editing in
+                                if !editing, let v = draggingHeatThreshold {
+                                    heatProtectionThreshold = Int(v)
+                                    draggingHeatThreshold = nil
+                                }
+                            }
+                        )
+                        .frame(height: 24)
+                        
+                        Text("\(displayVal)°\(temperatureUnit)")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.primary)
+                            .monospacedDigit()
+                            .frame(width: 45, alignment: .trailing)
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 12)
+                }
                 
                 Rectangle()
                     .fill(Color.white.opacity(0.06))

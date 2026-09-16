@@ -53,7 +53,48 @@ final class BatteryModel: ObservableObject {
         snapshot = s
         onUpdate?(s)
         logIfNeeded(s)
-        handleSailing(s)
+        
+        handleHeatProtection(s)
+        if !UserDefaults.standard.bool(forKey: "isHeatProtecting") {
+            handleSailing(s)
+        }
+    }
+
+    private func handleHeatProtection(_ s: BatterySnapshot) {
+        let defaults = UserDefaults.standard
+        let hpEnabled = defaults.bool(forKey: "heatProtectionEnabled")
+        let isHeatProtecting = defaults.bool(forKey: "isHeatProtecting")
+        
+        if !hpEnabled {
+            if isHeatProtecting {
+                defaults.set(false, forKey: "isHeatProtecting")
+            }
+            return
+        }
+        
+        let thresholdRaw = defaults.integer(forKey: "heatProtectionThreshold")
+        let threshold = thresholdRaw == 0 ? 35 : thresholdRaw
+        let currentTemp = s.temperatureC ?? 0
+        
+        if !isHeatProtecting {
+            if currentTemp > Double(threshold) {
+                defaults.set(true, forKey: "isHeatProtecting")
+                let pauseLimit = max(60, s.percent - (s.percent % 5))
+                DaemonModel.shared?.setLimit(pauseLimit)
+            }
+        } else {
+            // Cool down: Give it a 2-degree hysteresis so it doesn't bounce
+            if currentTemp <= Double(threshold - 2) {
+                defaults.set(false, forKey: "isHeatProtecting")
+                // Restoring the limit is handled seamlessly by handleSailing's failsafe on the next tick!
+            } else {
+                // Ensure the pause limit is maintained
+                let pauseLimit = max(60, s.percent - (s.percent % 5))
+                if let currentLimit = DaemonModel.shared?.limit, currentLimit != pauseLimit {
+                    DaemonModel.shared?.setLimit(pauseLimit)
+                }
+            }
+        }
     }
 
     private func handleSailing(_ s: BatterySnapshot) {
