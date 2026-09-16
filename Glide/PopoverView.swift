@@ -40,43 +40,106 @@ extension View {
 
 // MARK: - PopoverView
 
+enum GlideTab: String, CaseIterable {
+    case battery, history, settings
+
+    var icon: String {
+        switch self {
+        case .battery: return "bolt.fill"
+        case .history: return "chart.xyaxis.line"
+        case .settings: return "gearshape.fill"
+        }
+    }
+}
+
 struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
     @EnvironmentObject var daemon: DaemonModel
 
     @State private var draggingLimit: Double?
+    @State private var selectedTab: GlideTab = .battery
 
     var body: some View {
         ZStack {
             VisualEffectView(material: .popover, blendingMode: .behindWindow)
                 .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                if let s = model.snapshot {
-                    VStack(alignment: .leading, spacing: 14) {
-                        header(s)
-                        limitSection(s)
-                        statsSection(s)
-                        footer
-                    }
+            VStack(spacing: 0) {
+                tabBar
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
-                    .padding(.bottom, 16)
-                } else {
-                    VStack {
-                        Spacer()
-                        ProgressView("Reading battery…")
-                            .controlSize(.small)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    .frame(height: 520)
+                    .padding(.bottom, 4)
+
+                switch selectedTab {
+                case .battery:
+                    batteryTab
+                case .history:
+                    HistoryView()
+                case .settings:
+                    SettingsView()
                 }
             }
         }
         .frame(width: 320, height: 520)
         .preferredColorScheme(.dark)
         .onAppear { daemon.connect() }
+    }
+
+    // MARK: - Tab Bar
+
+    private var tabBar: some View {
+        HStack(spacing: 4) {
+            ForEach(GlideTab.allCases, id: \.rawValue) { tab in
+                Button {
+                    withAnimation(.spring(duration: 0.25)) { selectedTab = tab }
+                } label: {
+                    Image(systemName: tab.icon)
+                        .font(.body.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(
+                            Capsule()
+                                .fill(selectedTab == tab ? Color.white.opacity(0.12) : Color.clear)
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(selectedTab == tab ? Color.white.opacity(0.15) : Color.clear, lineWidth: 0.5)
+                        )
+                        .foregroundStyle(selectedTab == tab ? .primary : .secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(Color.white.opacity(0.04))
+        .clipShape(Capsule())
+    }
+
+    // MARK: - Battery Tab
+
+    private var batteryTab: some View {
+        ScrollView(showsIndicators: false) {
+            if let s = model.snapshot {
+                VStack(alignment: .leading, spacing: 14) {
+                    header(s)
+                    limitSection(s)
+                    statsSection(s)
+                    footer
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+            } else {
+                VStack {
+                    Spacer()
+                    ProgressView("Reading battery…")
+                        .controlSize(.small)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .frame(height: 440)
+            }
+        }
     }
 
     // MARK: - Header

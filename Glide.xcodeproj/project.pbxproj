@@ -16,6 +16,8 @@
 		BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65487F46BEC14BC4D2962A39 /* PopoverView.swift */; };
 		BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4770F766204478158D10279C /* DaemonModel.swift */; };
 		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
+		AA11111111111111AAAAAAAA /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22222222222222AAAAAAAA /* HistoryView.swift */; };
+		BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222BBBBBBBB /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		4770F766204478158D10279C /* DaemonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonModel.swift; sourceTree = "<group>"; };
 		5DA98551570C1BED4112FFBA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		65487F46BEC14BC4D2962A39 /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
+		AA22222222222222AAAAAAAA /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		BB22222222222222BBBBBBBB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */ = {isa = PBXFileReference; path = CACHEDIR.TAG; sourceTree = "<group>"; };
 		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C19E4AB8898F4727573A84A5 /* .buildSystem_debug */ = {isa = PBXFileReference; path = .buildSystem_debug; sourceTree = "<group>"; };
@@ -61,7 +65,9 @@
 				4770F766204478158D10279C /* DaemonModel.swift */,
 				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
 				3AE5532981419B04F2ECD2C8 /* Info.plist */,
+				AA22222222222222AAAAAAAA /* HistoryView.swift */,
 				65487F46BEC14BC4D2962A39 /* PopoverView.swift */,
+				BB22222222222222BBBBBBBB /* SettingsView.swift */,
 			);
 			path = Glide;
 			sourceTree = "<group>";
@@ -218,7 +224,9 @@
 				9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */,
 				BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */,
 				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
+				AA11111111111111AAAAAAAA /* HistoryView.swift in Sources */,
 				BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */,
+				BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
