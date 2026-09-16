@@ -1,5 +1,44 @@
 import SwiftUI
+import AppKit
 import GlideCore
+
+// MARK: - Theme
+
+enum GlideTheme {
+    static let signalGreen  = Color(nsColor: .systemGreen)
+    static let signalRed    = Color(nsColor: .systemRed)
+    static let orange       = Color(nsColor: .systemOrange)
+    static let blue         = Color(nsColor: .systemBlue)
+    static let teal         = Color(nsColor: .systemTeal)
+    static let pink         = Color(nsColor: .systemPink)
+
+    static let cardFill     = Color.white.opacity(0.06)
+    static let cardStroke   = Color.white.opacity(0.10)
+}
+
+// MARK: - Glass Card
+
+struct GlassCard: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(GlideTheme.cardStroke, lineWidth: 0.5)
+            )
+    }
+}
+
+extension View {
+    func glassCard() -> some View { modifier(GlassCard()) }
+}
+
+// MARK: - PopoverView
 
 struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
@@ -8,129 +47,358 @@ struct PopoverView: View {
     @State private var draggingLimit: Double?
 
     var body: some View {
-        ScrollView {
-            if let s = model.snapshot {
-                VStack(alignment: .leading, spacing: 14) {
-                    header(s)
-                    Divider()
-                    limitSection
-                    Divider()
-                    statGrid(s)
-                    Divider()
-                    debugSection(s)
+        ZStack {
+            VisualEffectView(material: .popover, blendingMode: .behindWindow)
+                .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                if let s = model.snapshot {
+                    VStack(alignment: .leading, spacing: 14) {
+                        header(s)
+                        limitSection(s)
+                        statsSection(s)
+                        footer
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+                } else {
+                    VStack {
+                        Spacer()
+                        ProgressView("Reading battery…")
+                            .controlSize(.small)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .frame(height: 520)
                 }
-                .padding(18)
-            } else {
-                ProgressView("reading battery…").padding(30)
             }
         }
-        .frame(width: 340, height: 540)
+        .frame(width: 320, height: 520)
         .preferredColorScheme(.dark)
         .onAppear { daemon.connect() }
     }
 
-    private var limitSection: some View {
+    // MARK: - Header
+
+    private func header(_ s: BatterySnapshot) -> some View {
         VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text("\(s.percent)")
+                        .font(.system(size: 64, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .animation(.spring(duration: 0.4), value: s.percent)
+                    Text("%")
+                        .font(.title.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                stateLabel(s)
+            }
+            batteryBar(s)
+        }
+    }
+
+    @ViewBuilder
+    private func stateLabel(_ s: BatterySnapshot) -> some View {
+        let targetLimit = daemon.limit ?? 100
+        let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
+
+        Group {
+            if isEffectivelyCharging {
+                statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen, pulse: true)
+            } else if s.isPluggedIn && s.percent >= targetLimit {
+                statePill("Holding", icon: "pause.fill", color: GlideTheme.orange)
+            } else if s.isFull {
+                statePill("Full", icon: "checkmark", color: .secondary)
+            } else {
+                statePill("On Battery", icon: batteryIcon(s), color: .secondary)
+            }
+        }
+    }
+
+    private func statePill(_ text: String, icon: String, color: Color, pulse: Bool = false) -> some View {
+        Label(text, systemImage: icon)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(color.opacity(0.12))
+            .clipShape(Capsule())
+            .symbolEffect(.pulse, options: .repeating, isActive: pulse)
+    }
+
+    private func batteryIcon(_ s: BatterySnapshot) -> String {
+        switch s.percent {
+        case ..<13: return "battery.0"
+        case ..<38: return "battery.25"
+        case ..<63: return "battery.50"
+        case ..<88: return "battery.75"
+        default:    return "battery.100"
+        }
+    }
+
+    private func batteryBar(_ s: BatterySnapshot) -> some View {
+        let targetLimit = daemon.limit ?? 100
+        let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
+        let barColor: LinearGradient = isEffectivelyCharging
+            ? LinearGradient(colors: [.green.opacity(0.85), .green], startPoint: .leading, endPoint: .trailing)
+            : LinearGradient(colors: [.orange.opacity(0.85), .orange], startPoint: .leading, endPoint: .trailing)
+
+        return VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.08)).frame(height: 12)
+
+                    Capsule()
+                        .fill(barColor)
+                        .frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100), height: 12)
+                        .animation(.spring(duration: 0.5), value: s.percent)
+
+                    if let limit = daemon.limit {
+                        RoundedRectangle(cornerRadius: 1.5)
+                            .fill(Color.white)
+                            .frame(width: 3, height: 18)
+                            .offset(x: geo.size.width * CGFloat(limit) / 100 - 1.5)
+                            .animation(.spring(duration: 0.4), value: limit)
+                            .shadow(color: .black.opacity(0.5), radius: 2)
+                    }
+                }
+            }
+            .frame(height: 18)
+
             HStack {
-                Text("CHARGE LIMIT").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                if let tr = model.timeRemaining {
+                    Text(tr)
+                } else {
+                    Text(s.isPluggedIn ? "Power Adapter" : "Battery")
+                }
                 Spacer()
                 if let limit = daemon.limit {
-                    Text("\(limit)%").font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(.mint)
-                } else {
-                    Label("daemon offline", systemImage: "bolt.slash")
-                        .font(.caption.weight(.medium)).foregroundStyle(.orange)
+                    Text("Limit \(limit)%")
+                }
+            }
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Charge Limit
+
+    private func limitSection(_ s: BatterySnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Charge Limit", systemImage: "battery.100.bolt")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                if let limit = daemon.limit {
+                    Text("\(limit)%")
+                        .font(.title3.weight(.bold))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .foregroundStyle(GlideTheme.signalGreen)
                 }
             }
 
             if let limit = daemon.limit {
-                Slider(
+                ThickSlider(
                     value: Binding(
                         get: { draggingLimit ?? Double(limit) },
                         set: { draggingLimit = $0 }
                     ),
-                    in: 60...100,
-                    step: 5
-                ) { editing in
-                    if !editing, let v = draggingLimit {
-                        daemon.setLimit(Int(v))
-                        draggingLimit = nil
+                    range: 60...100,
+                    step: 5,
+                    fillColor: GlideTheme.signalGreen,
+                    onEditingChanged: { editing in
+                        if !editing, let v = draggingLimit {
+                            draggingLimit = nil
+                            daemon.setLimit(Int(v))
+                        }
+                    }
+                )
+
+                // Preset capsules
+                HStack(spacing: 6) {
+                    ForEach([60, 70, 80, 90, 100], id: \.self) { p in
+                        Button { daemon.setLimit(p) } label: {
+                            Text("\(p)%")
+                                .font(.caption2.weight(.bold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(p == daemon.limit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(p == daemon.limit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
+                                )
+                                .foregroundStyle(p == daemon.limit ? .primary : .secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                HStack {
-                    Text("60").font(.caption2).foregroundStyle(.secondary)
-                    Spacer()
-                    ForEach([80, 85, 90, 100], id: \.self) { preset in
-                        Button("\(preset)%") { daemon.setLimit(preset) }
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(preset == daemon.limit ? .mint : .secondary)
-                    }
-                    Spacer()
-                    Text("100").font(.caption2).foregroundStyle(.secondary)
-                }
+            } else {
+                Label("Daemon offline", systemImage: "exclamationmark.triangle")
+                    .font(.subheadline)
+                    .foregroundStyle(GlideTheme.signalRed)
             }
 
             if let err = daemon.lastError {
-                Text(err).font(.caption2).foregroundStyle(.red)
+                Text(err).font(.caption2).foregroundStyle(GlideTheme.signalRed)
             }
         }
+        .glassCard()
     }
 
-    private func header(_ s: BatterySnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("\(s.percent)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                Text("%").font(.title2.weight(.semibold)).foregroundStyle(.secondary)
-                Spacer()
-                if s.isCharging { Image(systemName: "bolt.fill").foregroundStyle(.mint) }
+    // MARK: - Stats
+
+    private func statsSection(_ s: BatterySnapshot) -> some View {
+        VStack(spacing: 0) {
+            statRow(icon: "arrow.triangle.2.circlepath",
+                    iconColor: GlideTheme.teal,
+                    label: "Cycle Count",
+                    value: "\(s.cycleCount)")
+            statDivider
+            statRow(icon: "heart.fill",
+                    iconColor: GlideTheme.pink,
+                    label: "Battery Health",
+                    value: s.healthPercent.map { "\($0)%" } ?? "—")
+            statDivider
+            statRow(icon: "thermometer.medium",
+                    iconColor: GlideTheme.orange,
+                    label: "Temperature",
+                    value: s.temperatureC.map { String(format: "%.1f °C", $0) } ?? "—")
+            statDivider
+            statRow(icon: "bolt.fill",
+                    iconColor: GlideTheme.signalGreen,
+                    label: "Power Draw",
+                    value: s.watts.map { String(format: "%.1f W", $0) } ?? "—")
+        }
+        .glassCard()
+    }
+
+    private func statRow(icon: String, iconColor: Color, label: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body.weight(.medium))
+                .foregroundStyle(iconColor)
+                .frame(width: 28, height: 28)
+                .background(iconColor.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            Text(label)
+                .font(.subheadline)
+            Spacer()
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(.primary)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private var statDivider: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.06))
+            .frame(height: 0.5)
+            .padding(.leading, 40)
+    }
+
+    // MARK: - Footer
+
+    private var footer: some View {
+        HStack {
+            Text("Glide 2.0")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.tertiary)
+            Spacer()
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(daemon.limit != nil ? GlideTheme.signalGreen : GlideTheme.signalRed)
+                    .frame(width: 5, height: 5)
+                Text(daemon.limit != nil ? "Connected" : "Disconnected")
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.tertiary)
             }
-            Text(stateLine(s)).font(.subheadline.weight(.medium))
+            Spacer()
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Text("Quit")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.white.opacity(0.08), lineWidth: 0.5))
+            }
+            .buttonStyle(.plain)
         }
+        .padding(.top, 2)
+    }
+}
+
+// MARK: - Helper Views
+
+struct VisualEffectView: NSViewRepresentable {
+    var material: NSVisualEffectView.Material
+    var blendingMode: NSVisualEffectView.BlendingMode
+
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let v = NSVisualEffectView()
+        v.material = material
+        v.blendingMode = blendingMode
+        v.state = .active
+        return v
     }
 
-    private func stateLine(_ s: BatterySnapshot) -> String {
-        var parts: [String] = []
-        if s.isFull { parts.append("full") }
-        else if s.isCharging { parts.append("charging") }
-        else if s.isPluggedIn { parts.append("on AC · holding") }
-        else { parts.append("on battery") }
-        if let t = s.temperatureC { parts.append(String(format: "%.1f°C", t)) }
-        return parts.joined(separator: " · ")
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+        nsView.material = material
+        nsView.blendingMode = blendingMode
     }
+}
 
-    private func statGrid(_ s: BatterySnapshot) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            stat("cycles", "\(s.cycleCount)")
-            stat("health", s.healthPercent.map { "\($0)%" } ?? "—")
-            stat("temp", s.temperatureC.map { String(format: "%.1f°C", $0) } ?? "—")
-            stat("power", s.watts.map { String(format: "%.2f W", $0) } ?? "—")
-        }
-    }
+struct ThickSlider: View {
+    @Binding var value: Double
+    var range: ClosedRange<Double>
+    var step: Double
+    var fillColor: Color
+    var onEditingChanged: (Bool) -> Void
 
-    private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label.uppercased()).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
-            Text(value).font(.title3.weight(.semibold)).monospacedDigit()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+    var body: some View {
+        GeometryReader { geo in
+            let pct = max(0, min(1, (value - range.lowerBound) / (range.upperBound - range.lowerBound)))
 
-    private func debugSection(_ s: BatterySnapshot) -> some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 1) {
-                ForEach(s.raw.keys.sorted(), id: \.self) { key in
-                    HStack {
-                        Text(key).foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(s.raw[key] ?? 0)")
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.white.opacity(0.08))
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [fillColor.opacity(0.7), fillColor],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: max(20, geo.size.width * CGFloat(pct)))
+            }
+            .clipShape(Capsule())
+            .contentShape(Capsule())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { drag in
+                        onEditingChanged(true)
+                        let p = max(0, min(1, drag.location.x / geo.size.width))
+                        let raw = range.lowerBound + Double(p) * (range.upperBound - range.lowerBound)
+                        value = min(range.upperBound, max(range.lowerBound, round(raw / step) * step))
                     }
-                    .font(.system(size: 10, design: .monospaced))
-                }
-            }
-            .padding(.vertical, 6)
-        } label: {
-            Text("raw AppleSmartBattery (debug)").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    .onEnded { _ in
+                        onEditingChanged(false)
+                    }
+            )
         }
+        .frame(height: 28)
     }
 }

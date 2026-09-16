@@ -24,7 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DaemonModel.shared = daemon
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 340, height: 540)
+        popover.contentSize = NSSize(width: 340, height: 520)
+        popover.appearance = NSAppearance(named: .darkAqua)
         popover.contentViewController = NSHostingController(
             rootView: PopoverView().environmentObject(model).environmentObject(daemon)
         )

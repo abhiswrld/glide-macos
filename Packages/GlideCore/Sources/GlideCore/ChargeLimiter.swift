@@ -30,6 +30,7 @@ public enum ChargeLimiter {
     public static let domain = "com.apple.smartcharging.topoffprotection"
     public static let key = "mclLimitValue"
     public static let doorbell = "com.apple.smartcharging.defaultschanged"
+    public static let doorbell2 = "com.apple.powerui.smartcharge"
 
     /// apple only honors detents; probe 60 during testing, adjust if needed
     public static let allowedValues = Array(stride(from: 60, through: 100, by: 5))
@@ -50,6 +51,7 @@ public enum ChargeLimiter {
         }
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterPostNotification(center, CFNotificationName(doorbell as CFString), nil, nil, true)
+        CFNotificationCenterPostNotification(center, CFNotificationName(doorbell2 as CFString), nil, nil, true)
     }
 
     /// only meaningful when running as root (domain lives in /var/root)

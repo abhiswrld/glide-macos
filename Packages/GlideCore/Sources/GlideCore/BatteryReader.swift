@@ -11,6 +11,7 @@ public struct BatterySnapshot: Codable, Sendable {
     public let healthPercent: Int?
     public let temperatureC: Double?
     public let watts: Double?
+    public let timeRemainingMinutes: Int?
     public let raw: [String: Int]
 }
 
@@ -29,7 +30,6 @@ public enum BatteryReader {
                     if let n = (value as? NSNumber)?.intValue {
                         raw[k] = n
                     } else if let sub = value as? NSDictionary {
-                        // nested dicts (BatteryData) get flattened as "BatteryData.XYZ"
                         for (sk, sv) in sub {
                             if let sk = sk as? String, let sn = (sv as? NSNumber)?.intValue {
                                 raw["\(k).\(sk)"] = sn
@@ -60,6 +60,8 @@ public enum BatteryReader {
             watts = nil
         }
 
+        let timeRemaining = raw["TimeRemaining"] ?? -1
+
         return BatterySnapshot(
             timestamp: Date(),
             percent: raw["CurrentCapacity"] ?? 0,
@@ -70,6 +72,7 @@ public enum BatteryReader {
             healthPercent: health,
             temperatureC: tempC,
             watts: watts,
+            timeRemainingMinutes: timeRemaining > 0 ? timeRemaining : nil,
             raw: raw
         )
     }

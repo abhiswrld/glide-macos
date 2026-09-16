@@ -61,15 +61,21 @@ final class DaemonModel: ObservableObject {
     }
 
     func setLimit(_ value: Int) {
+        // optimistic: value is validated locally before it ever leaves, so the
+        // UI moves instantly; on a real error we re-sync from the daemon
+        limit = value
+        lastError = nil
+
         let p = proxy
         let onReply: (String?) -> Void = { error in
             Task { @MainActor in
                 guard let m = DaemonModel.shared else { return }
                 if let error {
                     m.lastError = error
+                    m.limit = nil
+                    m.connect()
                 } else {
                     m.limit = value
-                    m.lastError = nil
                 }
             }
         }
