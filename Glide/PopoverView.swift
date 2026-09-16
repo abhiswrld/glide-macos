@@ -58,7 +58,14 @@ struct PopoverView: View {
 
     @State private var draggingLimit: Double?
     @State private var selectedTab: GlideTab = .battery
+    @State private var draggingSailingLimit: Double?
 
+    @AppStorage("sailingEnabled") private var sailingEnabled: Bool = false
+    @AppStorage("sailingLowerLimit") private var sailingLowerLimit: Int = 75
+    @AppStorage("isSailing") private var isSailing: Bool = false
+    @AppStorage("heatProtectionEnabled") private var heatProtectionEnabled: Bool = false
+    @AppStorage("forceDischargeEnabled") private var forceDischargeEnabled: Bool = false
+    @AppStorage("primaryChargeLimit") private var primaryChargeLimit: Int = 80
     var body: some View {
         ZStack {
             VisualEffectView(material: .popover, blendingMode: .behindWindow)
@@ -97,6 +104,7 @@ struct PopoverView: View {
                         .font(.body.weight(.medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
+                        .contentShape(Rectangle())
                         .background(
                             Capsule()
                                 .fill(selectedTab == tab ? Color.white.opacity(0.12) : Color.clear)
@@ -123,6 +131,7 @@ struct PopoverView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     header(s)
                     limitSection(s)
+                    chargingFeaturesSection
                     statsSection(s)
                     footer
                 }
@@ -166,11 +175,13 @@ struct PopoverView: View {
 
     @ViewBuilder
     private func stateLabel(_ s: BatterySnapshot) -> some View {
-        let targetLimit = daemon.limit ?? 100
+        let targetLimit = primaryChargeLimit
         let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
 
         Group {
-            if isEffectivelyCharging {
+            if isSailing {
+                statePill("Sailing", icon: "wind", color: GlideTheme.blue)
+            } else if isEffectivelyCharging {
                 statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen, pulse: true)
             } else if s.isPluggedIn && s.percent >= targetLimit {
                 statePill("Holding", icon: "pause.fill", color: GlideTheme.orange)
@@ -204,30 +215,51 @@ struct PopoverView: View {
     }
 
     private func batteryBar(_ s: BatterySnapshot) -> some View {
-        let targetLimit = daemon.limit ?? 100
+        let targetLimit = primaryChargeLimit
         let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
-        let barColor: LinearGradient = isEffectivelyCharging
-            ? LinearGradient(colors: [.green.opacity(0.85), .green], startPoint: .leading, endPoint: .trailing)
-            : LinearGradient(colors: [.orange.opacity(0.85), .orange], startPoint: .leading, endPoint: .trailing)
+        
+        let limitGradient = LinearGradient(
+            stops: [
+                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.0),
+                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.6),
+                Gradient.Stop(color: GlideTheme.orange, location: 0.8),
+                Gradient.Stop(color: GlideTheme.signalRed, location: 1.0)
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+
+
 
         return VStack(alignment: .leading, spacing: 6) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.white.opacity(0.08)).frame(height: 12)
 
-                    Capsule()
-                        .fill(barColor)
-                        .frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100), height: 12)
-                        .animation(.spring(duration: 0.5), value: s.percent)
-
-                    if let limit = daemon.limit {
-                        RoundedRectangle(cornerRadius: 1.5)
-                            .fill(Color.white)
-                            .frame(width: 3, height: 18)
-                            .offset(x: geo.size.width * CGFloat(limit) / 100 - 1.5)
-                            .animation(.spring(duration: 0.4), value: limit)
-                            .shadow(color: .black.opacity(0.5), radius: 2)
+                    if isEffectivelyCharging {
+                        limitGradient
+                            .mask(
+                                ZStack(alignment: .leading) {
+                                    Capsule().frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100))
+                                    Color.clear
+                                }
+                            )
+                            .frame(height: 12)
+                            .animation(.spring(duration: 0.5), value: s.percent)
+                    } else {
+                        Capsule()
+                            .fill(Color.orange.opacity(0.85))
+                            .frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100), height: 12)
+                            .animation(.spring(duration: 0.5), value: s.percent)
                     }
+
+                    let limit = primaryChargeLimit
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(Color.white)
+                        .frame(width: 3, height: 18)
+                        .offset(x: geo.size.width * CGFloat(limit) / 100 - 1.5)
+                        .animation(.spring(duration: 0.4), value: limit)
+                        .shadow(color: .black.opacity(0.5), radius: 2)
                 }
             }
             .frame(height: 18)
@@ -239,9 +271,8 @@ struct PopoverView: View {
                     Text(s.isPluggedIn ? "Power Adapter" : "Battery")
                 }
                 Spacer()
-                if let limit = daemon.limit {
-                    Text("Limit \(limit)%")
-                }
+                let limit = primaryChargeLimit
+                Text("Limit \(limit)%")
             }
             .font(.caption2.weight(.medium))
             .foregroundStyle(.secondary)
@@ -252,20 +283,19 @@ struct PopoverView: View {
 
     private func limitSection(_ s: BatterySnapshot) -> some View {
         VStack(alignment: .leading, spacing: 12) {
+            let limit = primaryChargeLimit
             HStack {
                 Label("Charge Limit", systemImage: "battery.100.bolt")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                if let limit = daemon.limit {
-                    Text("\(limit)%")
-                        .font(.title3.weight(.bold))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .foregroundStyle(GlideTheme.signalGreen)
-                }
+                Text("\(limit)%")
+                    .font(.title3.weight(.bold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    .foregroundStyle(GlideTheme.signalGreen)
             }
 
-            if let limit = daemon.limit {
+            if daemon.limit != nil {
                 ThickSlider(
                     value: Binding(
                         get: { draggingLimit ?? Double(limit) },
@@ -273,11 +303,24 @@ struct PopoverView: View {
                     ),
                     range: 60...100,
                     step: 5,
-                    fillColor: GlideTheme.signalGreen,
+                    fillStyle: AnyShapeStyle(
+                        LinearGradient(
+                            stops: [
+                                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.0),
+                                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.6),
+                                Gradient.Stop(color: GlideTheme.orange, location: 0.8),
+                                Gradient.Stop(color: GlideTheme.signalRed, location: 1.0)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    ),
                     onEditingChanged: { editing in
                         if !editing, let v = draggingLimit {
                             draggingLimit = nil
-                            daemon.setLimit(Int(v))
+                            let newLimit = Int(v)
+                            primaryChargeLimit = newLimit
+                            daemon.setLimit(newLimit)
                         }
                     }
                 )
@@ -285,20 +328,20 @@ struct PopoverView: View {
                 // Preset capsules
                 HStack(spacing: 6) {
                     ForEach([60, 70, 80, 90, 100], id: \.self) { p in
-                        Button { daemon.setLimit(p) } label: {
+                        Button { primaryChargeLimit = p; daemon.setLimit(p) } label: {
                             Text("\(p)%")
                                 .font(.caption2.weight(.bold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 6)
                                 .background(
                                     Capsule()
-                                        .fill(p == daemon.limit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
+                                        .fill(p == primaryChargeLimit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
                                 )
                                 .overlay(
                                     Capsule()
-                                        .stroke(p == daemon.limit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
+                                        .stroke(p == primaryChargeLimit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
                                 )
-                                .foregroundStyle(p == daemon.limit ? .primary : .secondary)
+                                .foregroundStyle(p == primaryChargeLimit ? .primary : .secondary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -402,6 +445,123 @@ struct PopoverView: View {
         }
         .padding(.top, 2)
     }
+
+    // MARK: - Charging Features
+
+    private var chargingFeaturesSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("CHARGING FEATURES")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+                .padding(.bottom, 4)
+
+            VStack(spacing: 0) {
+                // Sailing Mode
+                featureToggleRow(
+                    icon: "wind",
+                    iconColor: GlideTheme.blue,
+                    label: "Sailing Mode",
+                    subtitle: "Discharge before recharging",
+                    isOn: $sailingEnabled
+                )
+                
+                if sailingEnabled {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.06))
+                        .frame(height: 0.5)
+                        .padding(.leading, 40)
+
+                    
+                    HStack {
+                        Spacer().frame(width: 40)
+                        
+                        let userLimit = primaryChargeLimit
+                        let opt1 = max(20, userLimit - 5)
+                        let opt2 = max(20, userLimit - 10)
+                        
+                        HStack(spacing: 0) {
+                            ForEach([opt1, opt2], id: \.self) { opt in
+                                Button {
+                                    withAnimation(.spring(duration: 0.2)) {
+                                        sailingLowerLimit = opt
+                                    }
+                                } label: {
+                                    Text("\(opt)%")
+                                        .font(.caption.weight(.semibold))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(sailingLowerLimit == opt ? GlideTheme.blue : Color.clear)
+                                        )
+                                        .foregroundStyle(sailingLowerLimit == opt ? .white : .secondary)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(3)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 12)
+                }
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 0.5)
+                    .padding(.leading, 40)
+
+                featureToggleRow(
+                    icon: "thermometer.sun.fill",
+                    iconColor: GlideTheme.orange,
+                    label: "Heat Protection",
+                    subtitle: "Pause charging above 37°C",
+                    isOn: $heatProtectionEnabled
+                )
+                
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 0.5)
+                    .padding(.leading, 40)
+
+                featureToggleRow(
+                    icon: "minus.circle",
+                    iconColor: GlideTheme.signalRed,
+                    label: "Force Discharge",
+                    subtitle: "Run entirely on battery down to 20%",
+                    isOn: $forceDischargeEnabled
+                )
+            }
+            .glassCard()
+        }
+    }
+    
+    private func featureToggleRow(icon: String, iconColor: Color, label: String, subtitle: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body.weight(.medium))
+                .foregroundStyle(iconColor)
+                .frame(width: 28, height: 28)
+                .background(iconColor.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.subheadline)
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: isOn)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+        }
+        .padding(.vertical, 6)
+    }
 }
 
 // MARK: - Helper Views
@@ -428,7 +588,7 @@ struct ThickSlider: View {
     @Binding var value: Double
     var range: ClosedRange<Double>
     var step: Double
-    var fillColor: Color
+    var fillStyle: AnyShapeStyle
     var onEditingChanged: (Bool) -> Void
 
     var body: some View {
@@ -437,15 +597,13 @@ struct ThickSlider: View {
 
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.white.opacity(0.08))
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [fillColor.opacity(0.7), fillColor],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                Rectangle().fill(fillStyle)
+                    .mask(
+                        ZStack(alignment: .leading) {
+                            Capsule().frame(width: max(20, geo.size.width * CGFloat(pct)))
+                            Color.clear
+                        }
                     )
-                    .frame(width: max(20, geo.size.width * CGFloat(pct)))
             }
             .clipShape(Capsule())
             .contentShape(Capsule())

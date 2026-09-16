@@ -53,6 +53,55 @@ final class BatteryModel: ObservableObject {
         snapshot = s
         onUpdate?(s)
         logIfNeeded(s)
+        handleSailing(s)
+    }
+
+    private func handleSailing(_ s: BatterySnapshot) {
+        let defaults = UserDefaults.standard
+        let sailingEnabled = defaults.bool(forKey: "sailingEnabled")
+        let isSailing = defaults.bool(forKey: "isSailing")
+        
+        let primaryLimitRaw = defaults.integer(forKey: "primaryChargeLimit")
+        let primaryLimit = primaryLimitRaw == 0 ? 80 : primaryLimitRaw
+
+        if !sailingEnabled {
+            if isSailing {
+                defaults.set(false, forKey: "isSailing")
+            }
+            // Always ensure daemon matches user's primary limit when sailing is OFF
+            if let currentLimit = DaemonModel.shared?.limit, currentLimit != primaryLimit {
+                DaemonModel.shared?.setLimit(primaryLimit)
+            }
+            return
+        }
+
+        let lowerLimitRaw = defaults.integer(forKey: "sailingLowerLimit")
+        let lowerLimit = lowerLimitRaw == 0 ? 75 : lowerLimitRaw
+        if lowerLimit == 0 || primaryLimit == 0 { return }
+
+        if !isSailing {
+            // Start sailing when battery reaches the user's primary limit
+            if s.percent >= primaryLimit, lowerLimit < primaryLimit {
+                defaults.set(true, forKey: "isSailing")
+                DaemonModel.shared?.setLimit(lowerLimit)
+            } else {
+                // Failsafe: Ensure daemon is targeting the primary limit to charge up
+                if let currentLimit = DaemonModel.shared?.limit, currentLimit != primaryLimit {
+                    DaemonModel.shared?.setLimit(primaryLimit)
+                }
+            }
+        } else {
+            // Stop sailing when battery drains to the lower limit
+            if s.percent <= lowerLimit {
+                defaults.set(false, forKey: "isSailing")
+                DaemonModel.shared?.setLimit(primaryLimit)
+            } else {
+                // Failsafe: Ensure daemon is targeting the lower limit to discharge
+                if let currentLimit = DaemonModel.shared?.limit, currentLimit != lowerLimit {
+                    DaemonModel.shared?.setLimit(lowerLimit)
+                }
+            }
+        }
     }
 
     // MARK: - History Persistence

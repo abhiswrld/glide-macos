@@ -12,7 +12,6 @@ struct SettingsView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
-                chargingFeaturesSection
                 menuBarSection
                 preferencesSection
             }
@@ -22,44 +21,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Charging Features (Coming Soon)
 
-    private var chargingFeaturesSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            sectionHeader("Charging Features")
-
-            VStack(spacing: 0) {
-                comingSoonRow(
-                    icon: "wind",
-                    iconColor: GlideTheme.blue,
-                    label: "Sailing Mode",
-                    subtitle: "Discharge to 75% before recharging"
-                )
-                settingsDivider
-                comingSoonRow(
-                    icon: "thermometer.sun.fill",
-                    iconColor: GlideTheme.orange,
-                    label: "Heat Protection",
-                    subtitle: "Pause charging above 37°C"
-                )
-                settingsDivider
-                comingSoonRow(
-                    icon: "minus.circle",
-                    iconColor: GlideTheme.signalRed,
-                    label: "Force Discharge",
-                    subtitle: "Run entirely on battery down to 20%"
-                )
-                settingsDivider
-                comingSoonRow(
-                    icon: "arrow.triangle.2.circlepath.circle",
-                    iconColor: Color.purple,
-                    label: "Calibration Cycle",
-                    subtitle: "100% → 10% → back to limit"
-                )
-            }
-            .glassCard()
-        }
-    }
 
     // MARK: - Menu Bar
 
@@ -74,12 +36,10 @@ struct SettingsView: View {
                     Text("Icon Style")
                         .font(.subheadline)
                     Spacer()
-                    Picker("", selection: $menuBarIcon) {
-                        Text("Standard").tag("standard")
-                        Text("Circle").tag("circle")
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 150)
+                    pillPicker(
+                        options: [("Standard", "standard"), ("Circle", "circle")],
+                        selection: $menuBarIcon
+                    )
                 }
                 .padding(.vertical, 6)
 
@@ -110,12 +70,10 @@ struct SettingsView: View {
                     Text("Temperature Unit")
                         .font(.subheadline)
                     Spacer()
-                    Picker("", selection: $temperatureUnit) {
-                        Text("°F").tag("F")
-                        Text("°C").tag("C")
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 100)
+                    pillPicker(
+                        options: [("°F", "F"), ("°C", "C")],
+                        selection: $temperatureUnit
+                    )
                 }
                 .padding(.vertical, 6)
 
@@ -134,6 +92,30 @@ struct SettingsView: View {
     }
 
     // MARK: - Shared Components
+
+    private func pillPicker(options: [(String, String)], selection: Binding<String>) -> some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.1) { label, value in
+                Button {
+                    selection.wrappedValue = value
+                } label: {
+                    Text(label)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(selection.wrappedValue == value ? Color.white.opacity(0.15) : Color.clear)
+                        )
+                        .foregroundStyle(selection.wrappedValue == value ? .primary : .secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(Color.white.opacity(0.06))
+        .clipShape(Capsule())
+    }
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
@@ -166,28 +148,7 @@ struct SettingsView: View {
         .padding(.vertical, 6)
     }
 
-    private func comingSoonRow(icon: String, iconColor: Color, label: String, subtitle: String) -> some View {
-        HStack(spacing: 12) {
-            settingsIcon(icon, color: iconColor)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.subheadline)
-                Text(subtitle)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Text("Soon")
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(Color.white.opacity(0.08))
-                .clipShape(Capsule())
-        }
-        .padding(.vertical, 6)
-        .opacity(0.6)
-    }
+
 
     private var settingsDivider: some View {
         Rectangle()
