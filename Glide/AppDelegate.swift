@@ -201,6 +201,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         switch iconStyle {
         case "circle":
             button.image = drawBatteryCircle(percent: s.percent, isCharging: s.isCharging)
+        case "vertical":
+            button.image = drawBatteryVertical(percent: s.percent, isCharging: s.isCharging)
         default: // "standard"
             button.image = NSImage(systemSymbolName: symbol(for: s), accessibilityDescription: "battery")
             if let img = button.image {
@@ -274,6 +276,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                     height: boltSize.height
                 )
                 bolt.draw(in: boltRect)
+            }
+        }
+        
+        image.unlockFocus()
+        image.isTemplate = true
+        
+        return image
+    }
+
+    private func drawBatteryVertical(percent: Int, isCharging: Bool) -> NSImage {
+        let size = NSSize(width: 12, height: 16)
+        let image = NSImage(size: size)
+        
+        image.lockFocus()
+        
+        // Battery Body
+        let bodyRect = NSRect(x: 1, y: 1, width: 10, height: 13)
+        let bodyPath = NSBezierPath(roundedRect: bodyRect, xRadius: 1, yRadius: 1)
+        
+        // Battery Cap (top)
+        let capRect = NSRect(x: 4, y: 14, width: 4, height: 1.5)
+        let capPath = NSBezierPath(rect: capRect)
+        
+        NSColor.tertiaryLabelColor.setStroke()
+        bodyPath.lineWidth = 1.0
+        bodyPath.stroke()
+        
+        NSColor.tertiaryLabelColor.setFill()
+        capPath.fill()
+        
+        // Draw progress (bottom up)
+        let innerRect = bodyRect.insetBy(dx: 1.5, dy: 1.5)
+        let progressHeight = max(0, innerRect.height * CGFloat(percent) / 100.0)
+        
+        if progressHeight > 0 {
+            let progressRect = NSRect(x: innerRect.minX, y: innerRect.minY, width: innerRect.width, height: progressHeight)
+            let progressPath = NSBezierPath(roundedRect: progressRect, xRadius: 0.5, yRadius: 0.5)
+            NSColor.labelColor.setFill()
+            progressPath.fill()
+        }
+        
+        if isCharging {
+            if let bolt = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil) {
+                let boltSize = NSSize(width: 6, height: 8)
+                let center = NSPoint(x: size.width / 2, y: bodyRect.midY)
+                let boltRect = NSRect(
+                    x: center.x - boltSize.width/2,
+                    y: center.y - boltSize.height/2,
+                    width: boltSize.width,
+                    height: boltSize.height
+                )
+                
+                if percent > 50 {
+                    bolt.isTemplate = false
+                    NSColor.windowBackgroundColor.setFill()
+                    bolt.draw(in: boltRect, from: .zero, operation: .destinationOut, fraction: 1.0)
+                } else {
+                    bolt.draw(in: boltRect)
+                }
             }
         }
         

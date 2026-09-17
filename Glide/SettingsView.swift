@@ -37,11 +37,8 @@ struct SettingsView: View {
                 // Icon style
                 HStack(spacing: 12) {
                     settingsIcon("menubar.rectangle", color: GlideTheme.teal)
-                    Text("Icon Style")
-                        .font(.subheadline)
-                    Spacer()
-                    pillPicker(
-                        options: [("Standard", "standard"), ("Circle", "circle")],
+                    iconPillPicker(
+                        options: [("battery.100", "standard"), ("circle", "circle"), ("battery.100", "vertical")],
                         selection: $menuBarIcon
                     )
                 }
@@ -100,7 +97,7 @@ struct SettingsView: View {
                     Text("Temperature Unit")
                         .font(.subheadline)
                     Spacer()
-                    pillPicker(
+                    textPillPicker(
                         options: [("°F", "F"), ("°C", "C")],
                         selection: $temperatureUnit
                     )
@@ -228,16 +225,18 @@ struct SettingsView: View {
 
     // MARK: - Shared Components
 
-    private func pillPicker(options: [(String, String)], selection: Binding<String>) -> some View {
-        HStack(spacing: 2) {
+    private func iconPillPicker(options: [(String, String)], selection: Binding<String>) -> some View {
+        HStack(spacing: 0) {
             ForEach(options, id: \.1) { label, value in
                 Button {
                     selection.wrappedValue = value
                 } label: {
-                    Text(label)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
+                    Image(systemName: label)
+                        .font(.body.weight(.semibold))
+                        .rotationEffect(.degrees(value == "vertical" ? -90 : 0))
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
                         .background(
                             Capsule()
                                 .fill(selection.wrappedValue == value ? Color.white.opacity(0.15) : Color.clear)
@@ -247,9 +246,31 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(3)
-        .background(Color.white.opacity(0.06))
-        .clipShape(Capsule())
+        .background(Capsule().fill(Color.white.opacity(0.04)))
+    }
+
+    private func textPillPicker(options: [(String, String)], selection: Binding<String>) -> some View {
+        HStack(spacing: 0) {
+            ForEach(options, id: \.1) { label, value in
+                Button {
+                    selection.wrappedValue = value
+                } label: {
+                    Text(label)
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(selection.wrappedValue == value ? Color.white.opacity(0.15) : Color.clear)
+                        )
+                        .foregroundStyle(selection.wrappedValue == value ? .primary : .secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .background(Capsule().fill(Color.white.opacity(0.04)))
     }
 
     private func sectionHeader(_ title: String) -> some View {

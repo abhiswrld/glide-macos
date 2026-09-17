@@ -5,9 +5,8 @@ import GlideCore
 struct HistoryView: View {
     @EnvironmentObject var model: BatteryModel
 
-    @State private var timeRange: TimeRange = .sixMonths
-
-    @State private var shortTimeRange: ShortTimeRange = .twelveHours
+    @AppStorage("historyTimeRange") private var timeRange: TimeRange = .sixMonths
+    @AppStorage("shortHistoryTimeRange") private var shortTimeRange: ShortTimeRange = .sixHours
 
     enum ShortTimeRange: String, CaseIterable {
         case twoHours = "2H"
@@ -202,7 +201,6 @@ struct HistoryView: View {
                         x: .value("Date", entry.date),
                         y: .value("Health", entry.healthPercent)
                     )
-                    
                     .foregroundStyle(
                         LinearGradient(
                             colors: [GlideTheme.pink.opacity(0.8), GlideTheme.pink],
@@ -211,6 +209,14 @@ struct HistoryView: View {
                         )
                     )
                     .lineStyle(StrokeStyle(lineWidth: 2.5))
+
+                    if filteredEntries.count == 1 {
+                        PointMark(
+                            x: .value("Date", entry.date),
+                            y: .value("Health", entry.healthPercent)
+                        )
+                        .foregroundStyle(GlideTheme.pink)
+                    }
 
                     AreaMark(
                         x: .value("Date", entry.date),
@@ -275,7 +281,6 @@ struct HistoryView: View {
                         x: .value("Date", entry.date),
                         y: .value("Cycles", entry.cycleCount)
                     )
-                    
                     .foregroundStyle(
                         LinearGradient(
                             colors: [GlideTheme.teal.opacity(0.8), GlideTheme.teal],
@@ -284,6 +289,14 @@ struct HistoryView: View {
                         )
                     )
                     .lineStyle(StrokeStyle(lineWidth: 2.5))
+
+                    if filteredEntries.count == 1 {
+                        PointMark(
+                            x: .value("Date", entry.date),
+                            y: .value("Cycles", entry.cycleCount)
+                        )
+                        .foregroundStyle(GlideTheme.teal)
+                    }
 
                     AreaMark(
                         x: .value("Date", entry.date),
@@ -392,7 +405,7 @@ struct IsolatedShortTermChart: View, Equatable {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: min(rangeHours, 5))) { value in
+            AxisMarks(values: .stride(by: .hour)) { value in
                 AxisValueLabel() {
                     if let date = value.as(Date.self) {
                         Text(date, format: .dateTime.hour())

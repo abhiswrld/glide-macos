@@ -19,14 +19,14 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>2.0.1</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>SUPublicEDKey</key>
+	<string>pEd64TocHpNW5gWBps8aRdBTBHr5/5fX62gs6IYhUS8=</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/abhiswrld/glide-macos/main/appcast.xml</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
-	<key>SUFeedURL</key>
-	<string>https://example.com/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>ph/5hL+Zc6v4W1E/P8Kj0A3u5QG1F1R0W5G1xU1N7Cg=</string>
 </dict>
 </plist>
