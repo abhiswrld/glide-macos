@@ -2,6 +2,10 @@ import SwiftUI
 import AppKit
 import GlideCore
 
+extension Notification.Name {
+    static let glideRepairHelper = Notification.Name("glideRepairHelper")
+}
+
 // MARK: - Theme
 
 enum GlideTheme {
@@ -11,6 +15,7 @@ enum GlideTheme {
     static let blue         = Color(nsColor: .systemBlue)
     static let teal         = Color(nsColor: .systemTeal)
     static let pink         = Color(nsColor: .systemPink)
+    static let purple       = Color(nsColor: .systemPurple)
 
     static let cardFill     = Color.white.opacity(0.06)
     static let cardStroke   = Color.white.opacity(0.10)
@@ -21,11 +26,11 @@ enum GlideTheme {
 struct GlassCard: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    .fill(Color.white.opacity(0.06))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -56,10 +61,15 @@ struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
     @EnvironmentObject var daemon: DaemonModel
 
+
     @State private var draggingLimit: Double?
     @State private var selectedTab: GlideTab = .battery
     @State private var draggingSailingLimit: Double?
     @State private var draggingHeatThreshold: Double?
+    
+    @State private var isProcessingDischarge: Bool = false
+    @State private var isProcessingLimit: Bool = false
+
 
     @AppStorage("sailingEnabled") private var sailingEnabled: Bool = false
     @AppStorage("sailingLowerLimit") private var sailingLowerLimit: Int = 75
@@ -68,6 +78,8 @@ struct PopoverView: View {
     @AppStorage("heatProtectionThreshold") private var heatProtectionThreshold: Int = 35
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
     @AppStorage("forceDischargeEnabled") private var forceDischargeEnabled: Bool = false
+    @AppStorage("isForceDischarging") private var isForceDischarging: Bool = false
+    @AppStorage("calibrationPhase") private var calibrationPhase: Int = 0
     @AppStorage("primaryChargeLimit") private var primaryChargeLimit: Int = 80
     var body: some View {
         ZStack {
@@ -158,20 +170,29 @@ struct PopoverView: View {
 
     private func header(_ s: BatterySnapshot) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .center) {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(s.percent)")
                         .font(.system(size: 64, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .animation(.spring(duration: 0.4), value: s.percent)
                     Text("%")
                         .font(.title.weight(.bold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                stateLabel(s)
+                VStack(alignment: .trailing, spacing: 8) {
+                    powerDrawPill(s)
+                    stateLabel(s)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.black.opacity(0.25))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+            )
             batteryBar(s)
         }
     }
@@ -186,10 +207,14 @@ struct PopoverView: View {
         Group {
             if isHeatProtecting {
                 statePill("Cooling", icon: "thermometer.sun.fill", color: GlideTheme.signalRed)
+            } else if calibrationPhase != 0 {
+                statePill("Calibrating", icon: "arrow.triangle.2.circlepath", color: GlideTheme.purple)
+            } else if isForceDischarging {
+                statePill("Discharging", icon: "bolt.slash.fill", color: GlideTheme.signalRed)
             } else if isSailing {
                 statePill("Sailing", icon: "wind", color: GlideTheme.blue)
             } else if isEffectivelyCharging {
-                statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen, pulse: true)
+                statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen)
             } else if s.isPluggedIn && s.percent >= targetLimit {
                 statePill("Holding", icon: "pause.fill", color: GlideTheme.orange)
             } else if s.isFull {
@@ -200,15 +225,27 @@ struct PopoverView: View {
         }
     }
 
+    @ViewBuilder
+    private func powerDrawPill(_ s: BatterySnapshot) -> some View {
+        if let watts = s.watts {
+            let isDischarging = watts < 0
+            let color = isDischarging ? GlideTheme.signalRed : GlideTheme.signalGreen
+            let icon = isDischarging ? "arrow.down.forward" : "arrow.up.right"
+            statePill(String(format: "%.1f W", abs(watts)), icon: icon, color: color)
+        } else {
+            statePill("— W", icon: "bolt.fill", color: .secondary)
+        }
+    }
+
     private func statePill(_ text: String, icon: String, color: Color, pulse: Bool = false) -> some View {
         Label(text, systemImage: icon)
-            .font(.caption.weight(.semibold))
+            .font(.subheadline.weight(.bold))
             .foregroundStyle(color)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 5)
-            .background(color.opacity(0.12))
+            .background(color.opacity(0.18))
             .clipShape(Capsule())
-            .symbolEffect(.pulse, options: .repeating, isActive: pulse)
+            
     }
 
     private func batteryIcon(_ s: BatterySnapshot) -> String {
@@ -252,12 +289,10 @@ struct PopoverView: View {
                                 }
                             )
                             .frame(height: 12)
-                            .animation(.spring(duration: 0.5), value: s.percent)
                     } else {
                         Capsule()
                             .fill(Color.orange.opacity(0.85))
                             .frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100), height: 12)
-                            .animation(.spring(duration: 0.5), value: s.percent)
                     }
 
                     let limit = primaryChargeLimit
@@ -265,8 +300,6 @@ struct PopoverView: View {
                         .fill(Color.white)
                         .frame(width: 3, height: 18)
                         .offset(x: geo.size.width * CGFloat(limit) / 100 - 1.5)
-                        .animation(.spring(duration: 0.4), value: limit)
-                        .shadow(color: .black.opacity(0.5), radius: 2)
                 }
             }
             .frame(height: 18)
@@ -281,7 +314,7 @@ struct PopoverView: View {
                 let limit = primaryChargeLimit
                 Text("Limit \(limit)%")
             }
-            .font(.caption2.weight(.medium))
+            .font(.system(size: 14, weight: .medium))
             .foregroundStyle(.secondary)
         }
     }
@@ -298,65 +331,78 @@ struct PopoverView: View {
                 Text("\(limit)%")
                     .font(.title3.weight(.bold))
                     .monospacedDigit()
-                    .contentTransition(.numericText())
                     .foregroundStyle(GlideTheme.signalGreen)
             }
 
-            if daemon.limit != nil {
-                ThickSlider(
-                    value: Binding(
-                        get: { draggingLimit ?? Double(limit) },
-                        set: { draggingLimit = $0 }
-                    ),
-                    range: 60...100,
-                    step: 5,
-                    fillStyle: AnyShapeStyle(
-                        LinearGradient(
-                            stops: [
-                                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.0),
-                                Gradient.Stop(color: GlideTheme.signalGreen, location: 0.6),
-                                Gradient.Stop(color: GlideTheme.orange, location: 0.8),
-                                Gradient.Stop(color: GlideTheme.signalRed, location: 1.0)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    ),
-                    onEditingChanged: { editing in
-                        if !editing, let v = draggingLimit {
-                            draggingLimit = nil
-                            let newLimit = Int(v)
-                            primaryChargeLimit = newLimit
-                            daemon.setLimit(newLimit)
-                        }
-                    }
-                )
-
-                // Preset capsules
-                HStack(spacing: 6) {
-                    ForEach([60, 70, 80, 90, 100], id: \.self) { p in
-                        Button { primaryChargeLimit = p; daemon.setLimit(p) } label: {
-                            Text("\(p)%")
-                                .font(.caption2.weight(.bold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(p == primaryChargeLimit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .stroke(p == primaryChargeLimit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
-                                )
-                                .foregroundStyle(p == primaryChargeLimit ? .primary : .secondary)
-                        }
-                        .buttonStyle(.plain)
+            ThickSlider(
+                value: Binding(
+                    get: { draggingLimit ?? Double(limit) },
+                    set: { draggingLimit = $0 }
+                ),
+                range: 60...100,
+                step: 5,
+                fillStyle: AnyShapeStyle(
+                    LinearGradient(
+                        stops: [
+                            Gradient.Stop(color: GlideTheme.signalGreen, location: 0.0),
+                            Gradient.Stop(color: GlideTheme.orange, location: 0.5),
+                            Gradient.Stop(color: GlideTheme.signalRed, location: 1.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                ),
+                onEditingChanged: { editing in
+                    if !editing, let v = draggingLimit {
+                        draggingLimit = nil
+                        let newLimit = Int(v)
+                        primaryChargeLimit = newLimit
+                        daemon.setLimit(newLimit)
                     }
                 }
-            } else {
-                Label("Daemon offline", systemImage: "exclamationmark.triangle")
-                    .font(.subheadline)
-                    .foregroundStyle(GlideTheme.signalRed)
+            )
+
+            // Preset capsules
+            HStack(spacing: 6) {
+                ForEach([60, 70, 80, 90, 100], id: \.self) { p in
+                    Button { primaryChargeLimit = p; daemon.setLimit(p) } label: {
+                        Text("\(p)%")
+                            .font(.caption2.weight(.bold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(p == primaryChargeLimit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(p == primaryChargeLimit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
+                            )
+                            .foregroundStyle(p == primaryChargeLimit ? .primary : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if daemon.limit == nil {
+                HStack {
+                    Spacer()
+                    Button {
+                        NSLog("[Glide] Repair button tapped")
+                        NotificationCenter.default.post(name: .glideRepairHelper, object: nil)
+                    } label: {
+                        Label("Daemon offline - Click to Repair", systemImage: "exclamationmark.arrow.triangle.2.circlepath")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(GlideTheme.signalRed)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(GlideTheme.signalRed.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    Spacer()
+                }
+                .padding(.top, 4)
             }
 
             if let err = daemon.lastError {
@@ -380,15 +426,13 @@ struct PopoverView: View {
                     label: "Battery Health",
                     value: s.healthPercent.map { "\($0)%" } ?? "—")
             statDivider
+            let tempVal = temperatureUnit == "F" ? (s.temperatureC ?? 0) * 9/5 + 32 : (s.temperatureC ?? 0)
+            let tempStr = s.temperatureC != nil ? String(format: "%.1f °%@", tempVal, temperatureUnit) : "—"
+            
             statRow(icon: "thermometer.medium",
                     iconColor: GlideTheme.orange,
                     label: "Temperature",
-                    value: s.temperatureC.map { String(format: "%.1f °C", $0) } ?? "—")
-            statDivider
-            statRow(icon: "bolt.fill",
-                    iconColor: GlideTheme.signalGreen,
-                    label: "Power Draw",
-                    value: s.watts.map { String(format: "%.1f W", $0) } ?? "—")
+                    value: tempStr)
         }
         .glassCard()
     }
@@ -424,15 +468,15 @@ struct PopoverView: View {
     private var footer: some View {
         HStack {
             Text("Glide 2.0")
-                .font(.caption2.weight(.bold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(.tertiary)
             Spacer()
             HStack(spacing: 5) {
                 Circle()
                     .fill(daemon.limit != nil ? GlideTheme.signalGreen : GlideTheme.signalRed)
-                    .frame(width: 5, height: 5)
+                    .frame(width: 6, height: 6)
                 Text(daemon.limit != nil ? "Connected" : "Disconnected")
-                    .font(.caption2.weight(.medium))
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.tertiary)
             }
             Spacer()
@@ -440,17 +484,24 @@ struct PopoverView: View {
                 NSApp.terminate(nil)
             } label: {
                 Text("Quit")
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(.ultraThinMaterial)
+                    .background(Color.white.opacity(0.08))
                     .clipShape(Capsule())
                     .overlay(Capsule().stroke(Color.white.opacity(0.08), lineWidth: 0.5))
             }
             .buttonStyle(.plain)
         }
-        .padding(.top, 2)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(Color.white.opacity(0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+        )
     }
 
     // MARK: - Charging Features
@@ -469,7 +520,7 @@ struct PopoverView: View {
                     icon: "wind",
                     iconColor: GlideTheme.blue,
                     label: "Sailing Mode",
-                    subtitle: "Discharge before recharging",
+                    subtitle: "Sail between 2 values",
                     isOn: $sailingEnabled
                 )
                 
@@ -572,15 +623,64 @@ struct PopoverView: View {
                     icon: "minus.circle",
                     iconColor: GlideTheme.signalRed,
                     label: "Force Discharge",
-                    subtitle: "Run entirely on battery down to 20%",
-                    isOn: $forceDischargeEnabled
+                    subtitle: "Run entirely on battery",
+                    isOn: $forceDischargeEnabled,
+                    isProcessing: isProcessingDischarge
+                )
+                .onChange(of: forceDischargeEnabled) { _ in
+                    isProcessingDischarge = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) {
+                        isProcessingDischarge = false
+                    }
+                }
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 0.5)
+                    .padding(.leading, 40)
+
+                featureToggleRow(
+                    icon: "arrow.triangle.2.circlepath",
+                    iconColor: GlideTheme.purple,
+                    label: "Calibration Cycle",
+                    subtitle: calibrationPhase == 0 ? "Calibrate battery" : ((model.snapshot?.isPluggedIn ?? false) ? "Calibrating" : "Plug in charger"),
+                    isOn: Binding(
+                        get: { calibrationPhase != 0 },
+                        set: { on in
+                            withAnimation(.spring(duration: 0.2)) {
+                                if on {
+                                    calibrationPhase = 1
+                                    if forceDischargeEnabled {
+                                        forceDischargeEnabled = false
+                                        isForceDischarging = false
+                                        daemon.setForceDischarge(false)
+                                    }
+                                } else {
+                                    calibrationPhase = 0
+                                    isForceDischarging = false
+                                    forceDischargeEnabled = false
+                                    daemon.setForceDischarge(false)
+                                    daemon.setLimit(primaryChargeLimit)
+                                }
+                            }
+                        }
+                    )
                 )
             }
             .glassCard()
         }
     }
     
-    private func featureToggleRow(icon: String, iconColor: Color, label: String, subtitle: String, isOn: Binding<Bool>) -> some View {
+
+    private func featureToggleRow(
+        icon: String,
+        iconColor: Color,
+        label: String,
+        subtitle: String,
+        isOn: Binding<Bool>,
+        isProcessing: Bool = false
+    ) -> some View {
+
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.body.weight(.medium))
@@ -592,9 +692,13 @@ struct PopoverView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.subheadline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 Text(subtitle)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
             Spacer()
             Toggle("", isOn: isOn)
