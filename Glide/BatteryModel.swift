@@ -1,5 +1,6 @@
 import Foundation
 import GlideCore
+import IOKit.pwr_mgt
 
 // MARK: - History Entry
 
@@ -10,16 +11,33 @@ struct BatteryHistoryEntry: Codable, Identifiable {
     let cycleCount: Int
 }
 
+
+// MARK: - Short Term History Entry
+
+struct ShortTermBatteryEntry: Codable, Identifiable {
+    var id: Date { date }
+    let date: Date
+    let percent: Int
+}
+
 // MARK: - Battery Model
 
 @MainActor
 final class BatteryModel: ObservableObject {
+
     @Published var snapshot: BatterySnapshot?
     @Published var history: [BatteryHistoryEntry] = []
+    @Published var shortTermHistory: [ShortTermBatteryEntry] = []
+
     var onUpdate: ((BatterySnapshot) -> Void)?
 
     private var lastPluggedIn: Bool?
     private var powerChangedAt = Date()
+    private var sleepAssertionID: IOPMAssertionID = 0
+    private var lastSetLEDColor: Int = -1
+
+    private var isUIVisible: Bool = false
+    private var pollingTask: Task<Void, Never>?
 
     /// nil until the power state has been stable long enough for a real estimate
     var timeRemaining: String? {
@@ -32,13 +50,30 @@ final class BatteryModel: ObservableObject {
         else { return nil }
         return "\(t / 60):\(String(format: "%02d", t % 60)) remaining"
     }
+    
+    func setUIVisibility(_ visible: Bool) {
+        if isUIVisible == visible { return }
+        isUIVisible = visible
+        startPolling()
+    }
+
 
     func start() {
         history = Self.loadHistory()
+        shortTermHistory = Self.loadShortTermHistory()
         refresh()
-        Task { @MainActor in
-            while true {
-                try? await Task.sleep(for: .seconds(3))
+        startPolling()
+    }
+
+    
+    private func startPolling() {
+        pollingTask?.cancel()
+        pollingTask = Task { @MainActor in
+            while !Task.isCancelled {
+                // Sleep for 10s if UI is visible, 60s if hidden to save battery
+                let delay: UInt64 = isUIVisible ? 10 : 60
+                try? await Task.sleep(nanoseconds: delay * 1_000_000_000)
+                if Task.isCancelled { break }
                 refresh()
             }
         }
@@ -50,15 +85,22 @@ final class BatteryModel: ObservableObject {
             lastPluggedIn = s.isPluggedIn
             powerChangedAt = Date()
         }
-        snapshot = s
+        if snapshot != s {
+            snapshot = s
+        }
         onUpdate?(s)
         logIfNeeded(s)
         
         handleHeatProtection(s)
         if !UserDefaults.standard.bool(forKey: "isHeatProtecting") {
+            if handleCalibration(s) { return }
+            if handleForceDischarge(s) { return }
             handleSailing(s)
         }
+        
+        manageMagSafeLED()
     }
+
 
     private func handleHeatProtection(_ s: BatterySnapshot) {
         let defaults = UserDefaults.standard
@@ -145,6 +187,114 @@ final class BatteryModel: ObservableObject {
         }
     }
 
+    private func handleForceDischarge(_ s: BatterySnapshot) -> Bool {
+        let defaults = UserDefaults.standard
+        let fdEnabled = defaults.bool(forKey: "forceDischargeEnabled")
+        let isForceDischarging = defaults.bool(forKey: "isForceDischarging")
+        
+        if !fdEnabled {
+            if isForceDischarging {
+                defaults.set(false, forKey: "isForceDischarging")
+                DaemonModel.shared?.setForceDischarge(false)
+            }
+            return false
+        }
+        
+        if s.percent <= 20 {
+            defaults.set(false, forKey: "forceDischargeEnabled")
+            if isForceDischarging {
+                defaults.set(false, forKey: "isForceDischarging")
+                DaemonModel.shared?.setForceDischarge(false)
+            }
+            return false
+        }
+        
+        if !isForceDischarging {
+            defaults.set(true, forKey: "isForceDischarging")
+            DaemonModel.shared?.setForceDischarge(true)
+        }
+        
+        return true
+    }
+
+    private func handleCalibration(_ s: BatterySnapshot) -> Bool {
+        let defaults = UserDefaults.standard
+        let phase = defaults.integer(forKey: "calibrationPhase") // 0=off, 1=charge, 2=discharge
+        
+        if phase == 0 {
+            manageSleepAssertion(active: false)
+            return false
+        }
+        
+        manageSleepAssertion(active: true)
+        
+        if phase == 1 {
+            // Phase 1: Charge to 100%
+            if let currentLimit = DaemonModel.shared?.limit, currentLimit != 100 {
+                DaemonModel.shared?.setLimit(100)
+            }
+            
+            if s.isFull || s.percent >= 100 {
+                defaults.set(2, forKey: "calibrationPhase")
+                DaemonModel.shared?.setForceDischarge(true)
+            }
+            return true
+        }
+        
+        if phase == 2 {
+            // Phase 2: Force Discharge to 10%
+            if s.percent <= 10 {
+                let primaryLimitRaw = defaults.integer(forKey: "primaryChargeLimit")
+                let primaryLimit = primaryLimitRaw == 0 ? 80 : primaryLimitRaw
+                
+                defaults.set(0, forKey: "calibrationPhase")
+                DaemonModel.shared?.setForceDischarge(false)
+                DaemonModel.shared?.setLimit(primaryLimit)
+            }
+            return true
+        }
+        
+        return false
+    }
+
+    private func manageSleepAssertion(active: Bool) {
+        if active {
+            if sleepAssertionID == 0 {
+                IOPMAssertionCreateWithName(
+                    kIOPMAssertionTypePreventUserIdleSystemSleep as CFString,
+                    IOPMAssertionLevel(kIOPMAssertionLevelOn),
+                    "Glide Battery Calibration" as CFString,
+                    &sleepAssertionID
+                )
+            }
+        } else {
+            if sleepAssertionID != 0 {
+                IOPMAssertionRelease(sleepAssertionID)
+                sleepAssertionID = 0
+            }
+        }
+    }
+
+    private func manageMagSafeLED() {
+        let enabled = UserDefaults.standard.bool(forKey: "magsafeLEDControlEnabled")
+        let targetColor: Int
+        if !enabled {
+            targetColor = 0
+        } else {
+            let defaults = UserDefaults.standard
+            if defaults.bool(forKey: "isForceDischarging") || defaults.bool(forKey: "isSailing") {
+                targetColor = 1
+            } else {
+                targetColor = 0
+            }
+        }
+        
+        if targetColor != lastSetLEDColor {
+            lastSetLEDColor = targetColor
+            DaemonModel.shared?.setMagSafeLED(targetColor)
+        }
+    }
+
     // MARK: - History Persistence
 
     private static let historyURL: URL = {
@@ -154,7 +304,23 @@ final class BatteryModel: ObservableObject {
         return dir.appendingPathComponent("history.json")
     }()
 
+
     private func logIfNeeded(_ s: BatterySnapshot) {
+        // Short-term logging (every 2 minutes)
+        if let lastShort = shortTermHistory.last {
+            if Date().timeIntervalSince(lastShort.date) > 120 {
+                shortTermHistory.append(ShortTermBatteryEntry(date: Date(), percent: s.percent))
+                // Prune older than 24 hours
+                let cutoff = Date().addingTimeInterval(-24 * 3600)
+                shortTermHistory = shortTermHistory.filter { $0.date >= cutoff }
+                saveShortTermHistory()
+            }
+        } else {
+            shortTermHistory.append(ShortTermBatteryEntry(date: Date(), percent: s.percent))
+            saveShortTermHistory()
+        }
+
+        // Long-term logging
         guard let health = s.healthPercent else { return }
 
         let cal = Calendar.current
@@ -172,6 +338,21 @@ final class BatteryModel: ObservableObject {
         )
         history.append(entry)
         Self.saveHistory(history)
+    }
+
+
+    private static func loadShortTermHistory() -> [ShortTermBatteryEntry] {
+        guard let data = UserDefaults.standard.data(forKey: "glideShortTermHistory"),
+              let decoded = try? JSONDecoder().decode([ShortTermBatteryEntry].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    private func saveShortTermHistory() {
+        if let encoded = try? JSONEncoder().encode(shortTermHistory) {
+            UserDefaults.standard.set(encoded, forKey: "glideShortTermHistory")
+        }
     }
 
     private static func loadHistory() -> [BatteryHistoryEntry] {
