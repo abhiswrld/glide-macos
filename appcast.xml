@@ -8,7 +8,7 @@
             <sparkle:version>1</sparkle:version>
             <sparkle:shortVersionString>2.0.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://raw.githubusercontent.com/abhiswrld/glide-macos/main/Glide.dmg" length="2707309" type="application/octet-stream" sparkle:edSignature="c/xweksx3chDkeojA19SLfT5q2PawBmZdxtwkLOEcjvE0tRf6m+d/LD+AScJxXQ1w7dPUyTCRDp5le04e2bnAw=="/>
+            <enclosure url="https://github.com/abhiswrld/glide-macos/releases/download/v2.0.1/Glide.dmg" length="2707309" type="application/octet-stream" sparkle:edSignature="c/xweksx3chDkeojA19SLfT5q2PawBmZdxtwkLOEcjvE0tRf6m+d/LD+AScJxXQ1w7dPUyTCRDp5le04e2bnAw=="/>
         </item>
     </channel>
 </rss>
