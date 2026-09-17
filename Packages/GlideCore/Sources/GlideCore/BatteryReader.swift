@@ -1,7 +1,7 @@
 import Foundation
 import IOKit
 
-public struct BatterySnapshot: Codable, Sendable {
+public struct BatterySnapshot: Codable, Sendable, Equatable {
     public let timestamp: Date
     public let percent: Int
     public let isCharging: Bool
@@ -13,6 +13,16 @@ public struct BatterySnapshot: Codable, Sendable {
     public let watts: Double?
     public let timeRemainingMinutes: Int?
     public let raw: [String: Int]
+
+    public static func == (lhs: BatterySnapshot, rhs: BatterySnapshot) -> Bool {
+        return lhs.percent == rhs.percent &&
+               lhs.isCharging == rhs.isCharging &&
+               lhs.isPluggedIn == rhs.isPluggedIn &&
+               lhs.isFull == rhs.isFull &&
+               lhs.cycleCount == rhs.cycleCount &&
+               lhs.healthPercent == rhs.healthPercent
+    }
+
 }
 
 public enum BatteryReader {
