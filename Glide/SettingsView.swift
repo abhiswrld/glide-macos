@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 import GlideCore
 
 struct SettingsView: View {
@@ -8,12 +9,15 @@ struct SettingsView: View {
     @AppStorage("showTempInMenuBar") private var showTempInMenuBar: Bool = false
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
     @AppStorage("systemNotifications") private var systemNotifications: Bool = true
+    @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
+    @AppStorage("magsafeLEDControlEnabled") private var magsafeLEDControlEnabled: Bool = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 menuBarSection
                 preferencesSection
+                aboutSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -42,6 +46,32 @@ struct SettingsView: View {
                     )
                 }
                 .padding(.vertical, 6)
+
+                settingsDivider
+
+                // Show percent
+                settingsToggleRow(
+                    icon: "percent",
+                    iconColor: GlideTheme.signalGreen,
+                    label: "Show % in Menu Bar",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "showPercentInMenuBar") },
+                        set: { UserDefaults.standard.set($0, forKey: "showPercentInMenuBar") }
+                    )
+                )
+
+                settingsDivider
+
+                // Menu Only Mode (Hide Dock Icon)
+                settingsToggleRow(
+                    icon: "dock.rectangle",
+                    iconColor: GlideTheme.purple,
+                    label: "Menu Bar Only Mode",
+                    isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "hideDockIcon") },
+                        set: { UserDefaults.standard.set($0, forKey: "hideDockIcon") }
+                    )
+                )
 
                 settingsDivider
 
@@ -86,8 +116,113 @@ struct SettingsView: View {
                     label: "System Notifications",
                     isOn: $systemNotifications
                 )
+                
+                settingsDivider
+                
+                // Launch at Login
+                settingsToggleRow(
+                    icon: "macwindow",
+                    iconColor: GlideTheme.purple,
+                    label: "Launch at Login",
+                    isOn: Binding(
+                        get: { launchAtLogin },
+                        set: { on in
+                            launchAtLogin = on
+                            if #available(macOS 13.0, *) {
+                                do {
+                                    if on {
+                                        try SMAppService.mainApp.register()
+                                    } else {
+                                        try SMAppService.mainApp.unregister()
+                                    }
+                                } catch {
+                                    print("Launch at login error: \(error)")
+                                }
+                            }
+                        }
+                    )
+                )
+                
+                settingsDivider
+                
+                // MagSafe LED
+                settingsToggleRow(
+                    icon: "lightbulb.fill",
+                    iconColor: GlideTheme.orange,
+                    label: "MagSafe LED Control (Beta)",
+                    isOn: $magsafeLEDControlEnabled
+                )
             }
             .glassCard()
+        }
+    }
+    
+    // MARK: - About
+    
+    private var aboutSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("About Glide")
+
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    settingsIcon("info.circle", color: GlideTheme.blue)
+                    Text("Version")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(GlideCore.version)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 6)
+
+                settingsDivider
+
+                HStack(spacing: 12) {
+                    settingsIcon("star.fill", color: GlideTheme.pink)
+                    Text("License Status")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(licenseText)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(GlideTheme.pink)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(GlideTheme.pink.opacity(0.12))
+                        .clipShape(Capsule())
+                }
+                .padding(.vertical, 6)
+            }
+            .glassCard()
+
+            // Check for Updates in its own centered bubble
+            Button {
+                SparkleManager.shared.checkForUpdates()
+            } label: {
+                HStack {
+                    Spacer()
+                    Text("Check for Updates")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(GlideTheme.blue)
+                    Spacer()
+                }
+                .padding(.vertical, 10)
+                .background(Color.white.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
+    private var licenseText: String {
+        switch LicenseManager.shared.status {
+        case .earlyAdopter: return "Early Adopter" // Emojis removed!
+        case .licensed: return "Pro"
+        case .trial(let days): return "\(days) days left"
+        case .expired: return "Expired"
         }
     }
 

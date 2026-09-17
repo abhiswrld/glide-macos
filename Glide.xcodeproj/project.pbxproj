@@ -8,28 +8,72 @@
 
 /* Begin PBXBuildFile section */
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		171003C96C3EB417BA04AFE9 /* SparkleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0CDE6FBCF3C36E3A500776 /* SparkleManager.swift */; };
 		1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 45641F6939027B2DEF38CA83 /* GlideCore */; };
+		2BA87119CF6C8C8810DD4381 /* LicenseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075713886D20E8C69DE89739 /* LicenseManager.swift */; };
 		5D76D856F44FB31563E88621 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA98551570C1BED4112FFBA /* main.swift */; };
 		93C0F641FAB7C997E2FC8DB6 /* CACHEDIR.TAG in Resources */ = {isa = PBXBuildFile; fileRef = 82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */; };
 		9E04586961A0484FCF94AE2B /* BatteryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77A372FAEBEBD1ECC134235 /* BatteryModel.swift */; };
+		AA11111111111111AAAAAAAA /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22222222222222AAAAAAAA /* HistoryView.swift */; };
 		B04825846C04D5BA7054E348 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC445FCAFDC22D82E247149 /* AppDelegate.swift */; };
+		B88D924F7E025DE513F42B26 /* glide-daemon in Embed Daemon */ = {isa = PBXBuildFile; fileRef = 320F1CE0E9A5998B92E8527A /* glide-daemon */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222BBBBBBBB /* SettingsView.swift */; };
 		BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65487F46BEC14BC4D2962A39 /* PopoverView.swift */; };
 		BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4770F766204478158D10279C /* DaemonModel.swift */; };
 		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
-		AA11111111111111AAAAAAAA /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22222222222222AAAAAAAA /* HistoryView.swift */; };
-		BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222BBBBBBBB /* SettingsView.swift */; };
+		D40E74F796CAB689CD5924FE /* com.abhinav.glide-daemon.plist in Embed Daemon Plist */ = {isa = PBXBuildFile; fileRef = 07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */; };
+		EA0676687F0E802049377FFC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CF4FF521E906468489A321 /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B8742ECD4F9156A16EBC1D32 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2C87CDC4AB5959E237BDBE6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A07E9FC62EA4ADAFB75AC784;
+			remoteInfo = "glide-daemon";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3CF78028C08076D44BC581ED /* Embed Daemon Plist */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchDaemons;
+			dstSubfolderSpec = 1;
+			files = (
+				D40E74F796CAB689CD5924FE /* com.abhinav.glide-daemon.plist in Embed Daemon Plist */,
+			);
+			name = "Embed Daemon Plist";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B488296BA4731A1E37800F77 /* Embed Daemon */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				B88D924F7E025DE513F42B26 /* glide-daemon in Embed Daemon */,
+			);
+			name = "Embed Daemon";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		075713886D20E8C69DE89739 /* LicenseManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LicenseManager.swift; sourceTree = "<group>"; };
+		07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "com.abhinav.glide-daemon.plist"; path = "glide-daemon/com.abhinav.glide-daemon.plist"; sourceTree = "<group>"; };
 		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4770F766204478158D10279C /* DaemonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonModel.swift; sourceTree = "<group>"; };
 		5DA98551570C1BED4112FFBA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		65487F46BEC14BC4D2962A39 /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
+		82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */ = {isa = PBXFileReference; path = CACHEDIR.TAG; sourceTree = "<group>"; };
+		93CF4FF521E906468489A321 /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E0CDE6FBCF3C36E3A500776 /* SparkleManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SparkleManager.swift; sourceTree = "<group>"; };
 		AA22222222222222AAAAAAAA /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		BB22222222222222BBBBBBBB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		82F9986534FCE6652A6CA947 /* CACHEDIR.TAG */ = {isa = PBXFileReference; path = CACHEDIR.TAG; sourceTree = "<group>"; };
-		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C19E4AB8898F4727573A84A5 /* .buildSystem_debug */ = {isa = PBXFileReference; path = .buildSystem_debug; sourceTree = "<group>"; };
 		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
 		CC6877DB6C77AE806FA83D49 /* GlideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GlideCore; path = Packages/GlideCore; sourceTree = SOURCE_ROOT; };
@@ -68,6 +112,9 @@
 				AA22222222222222AAAAAAAA /* HistoryView.swift */,
 				65487F46BEC14BC4D2962A39 /* PopoverView.swift */,
 				BB22222222222222BBBBBBBB /* SettingsView.swift */,
+				93CF4FF521E906468489A321 /* OnboardingView.swift */,
+				075713886D20E8C69DE89739 /* LicenseManager.swift */,
+				9E0CDE6FBCF3C36E3A500776 /* SparkleManager.swift */,
 			);
 			path = Glide;
 			sourceTree = "<group>";
@@ -97,6 +144,7 @@
 				312EF3B35CFB1F7EA54E24EB /* glide-daemon */,
 				FC0B4AEF3CAB0ACBFBD8B625 /* Packages */,
 				F0257EE2523A968F22A93828 /* Products */,
+				07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -126,14 +174,18 @@
 			buildPhases = (
 				CE014D1674B58123726B5048 /* Sources */,
 				C1A45032CBB16193099EB372 /* Frameworks */,
+				B488296BA4731A1E37800F77 /* Embed Daemon */,
+				3CF78028C08076D44BC581ED /* Embed Daemon Plist */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F592776A914B9C2AC641B657 /* PBXTargetDependency */,
 			);
 			name = Glide;
 			packageProductDependencies = (
 				45641F6939027B2DEF38CA83 /* GlideCore */,
+				18D5AE248D5A703CC7BCEEFD /* Sparkle */,
 			);
 			productName = Glide;
 			productReference = 97C6EBB568AC2ADAFB1A70E0 /* Glide.app */;
@@ -183,7 +235,8 @@
 			mainGroup = 94BA5C58C1A72FDC6E953004;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "Packages/GlideCore" */,
+				D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "GlideCore" */,
+				6D2FBD07610704717465FA04 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F0257EE2523A968F22A93828 /* Products */;
@@ -227,10 +280,22 @@
 				AA11111111111111AAAAAAAA /* HistoryView.swift in Sources */,
 				BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */,
 				BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */,
+				EA0676687F0E802049377FFC /* OnboardingView.swift in Sources */,
+				2BA87119CF6C8C8810DD4381 /* LicenseManager.swift in Sources */,
+				171003C96C3EB417BA04AFE9 /* SparkleManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F592776A914B9C2AC641B657 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "glide-daemon";
+			target = A07E9FC62EA4ADAFB75AC784 /* glide-daemon */;
+			targetProxy = B8742ECD4F9156A16EBC1D32 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		2D90AB4995AD19DF6C5CCA3F /* Debug */ = {
@@ -445,13 +510,29 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "Packages/GlideCore" */ = {
+		D32748372CFD724F40C24D2E /* XCLocalSwiftPackageReference "GlideCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/GlideCore;
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		6D2FBD07610704717465FA04 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		18D5AE248D5A703CC7BCEEFD /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2FBD07610704717465FA04 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		45641F6939027B2DEF38CA83 /* GlideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GlideCore;
