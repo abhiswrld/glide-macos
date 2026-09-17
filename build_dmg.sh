@@ -33,12 +33,12 @@ if [ -f "$DAEMON_PATH" ]; then
     codesign --force --sign "$SIGN_IDENTITY" --identifier "com.abhinav.glide-daemon" --options runtime "$DAEMON_PATH"
 fi
 
-echo "🔑 Re-signing main app bundle with Team ID..."
-codesign --force --sign "$SIGN_IDENTITY" --options runtime --deep "$APP_BUNDLE"
-
-# Ensure AppIcon is injected
+# Ensure AppIcon is injected before signing
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 cp AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+
+echo "🔑 Re-signing main app bundle with Team ID..."
+codesign --force --sign "$SIGN_IDENTITY" --options runtime --deep "$APP_BUNDLE"
 
 DMG_NAME="${APP_NAME}.dmg"
 echo "📀 Creating DMG..."
