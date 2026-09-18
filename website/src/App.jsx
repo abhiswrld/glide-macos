@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Activity, Shield, Settings, BatteryCharging, Zap, Cpu } from 'lucide-react'
 import './index.css'
+import './Pricing.css'
 
 function AccordionItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -120,8 +121,6 @@ function App() {
             }}>FAQ</a>
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
-
-          <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" className="btn-primary btn-small">Get Glide Pro</a>
         </div>
       </nav>
 
@@ -137,11 +136,15 @@ function App() {
             <div className="hero-cta">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" target="_blank" rel="noreferrer" className="btn-primary btn-large">
-                    Get Glide Pro - $5
-                  </a>
-                  <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
-                    View Source
+                  <a href="#pricing" onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.querySelector('#pricing');
+                    if (el) {
+                      const rect = el.getBoundingClientRect();
+                      window.scrollTo({ top: window.scrollY + rect.top, behavior: 'smooth' });
+                    }
+                  }} className="btn-primary btn-large">
+                    Get Glide
                   </a>
                 </div>
                 {remainingFree > 0 ? (
@@ -255,6 +258,61 @@ function App() {
                 <div className="scroll-macbook-notch"></div>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="pricing-section">
+        <div className="pricing-header">
+          <h2 className="pricing-title">Plans &amp; Pricing</h2>
+          <p className="pricing-subtitle">Whether your needs are basic or advanced, we've got you covered.</p>
+        </div>
+
+        <div className="pricing-grid">
+          {/* Free Tier */}
+          <div className="pricing-card">
+            <h3 className="pricing-name">Free</h3>
+            <p className="pricing-desc">Perfect for basic battery management and longevity.</p>
+            <div className="pricing-price">
+              <span className="pricing-currency">$</span>0
+              <span className="pricing-period">/forever</span>
+            </div>
+            <ul className="pricing-features">
+              <li className="pricing-feature"><span className="feature-check">✓</span> Set exact charge limits</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Live battery telemetry</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Open source</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Community support</li>
+            </ul>
+            <a href="https://github.com/abhiswrld/glide-macos/releases/latest" target="_blank" rel="noreferrer" className="pricing-btn free">
+              Download Free
+            </a>
+          </div>
+
+          {/* Pro Tier */}
+          <div className="pricing-card pro">
+            <div className="pricing-badge">Most Popular</div>
+            <h3 className="pricing-name">Glide Pro</h3>
+            <p className="pricing-desc">Advanced tools to take full control of your Mac's hardware.</p>
+            <div className="pricing-price">
+              <span className="pricing-currency">$</span>5
+              <span className="pricing-period">/lifetime</span>
+            </div>
+            <ul className="pricing-features">
+              <li className="pricing-feature"><span className="feature-check">✓</span> Everything in Free</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Sailing Mode</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Heat Protection</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Force Discharge</li>
+              <li className="pricing-feature"><span className="feature-check">✓</span> Custom menu bar icons</li>
+            </ul>
+            <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" target="_blank" rel="noreferrer" className="pricing-btn pro">
+              Get Glide Pro
+            </a>
+            {remainingFree > 0 && (
+              <div className="pricing-promo">
+                {remainingFree} free copies left &middot; code: <strong>EARLYBIRD</strong>
+              </div>
+            )}
           </div>
         </div>
       </section>
