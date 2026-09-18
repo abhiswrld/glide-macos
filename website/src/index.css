@@ -185,9 +185,12 @@ p {
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 40px;
+  border-radius: 32px;
   padding: 16px 32px;
   margin-bottom: 24px;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .hero-requirements {
@@ -195,8 +198,6 @@ p {
   color: var(--text-tertiary);
   font-weight: 500;
   letter-spacing: 0.02em;
-  display: inline-block;
-  padding: 12px 24px;
 }
 
 .hero-subtitle {
