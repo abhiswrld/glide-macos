@@ -80,7 +80,7 @@ function App() {
           
           <div className="nav-links">
             <a href="#features" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }}>Features</a>
-            <a href="#faq" onClick={(e) => { e.preventDefault(); document.querySelector('.faq-section').scrollIntoView({ behavior: 'smooth' }); }}>FAQ</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); document.querySelector('.faq-section').scrollIntoView(); }}>FAQ</a>
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
 
@@ -127,7 +127,7 @@ function App() {
         <div className="sticky-container">
           
           {/* Swerving background line that draws itself as you scroll */}
-          <svg style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100%', zIndex: 0, opacity: 0.8 }} preserveAspectRatio="none" viewBox="0 0 100 1000">
+          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.35, pointerEvents: 'none' }} preserveAspectRatio="none" viewBox="0 0 100 1000">
             <defs>
               <linearGradient id="line-gradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#8A2BE2" />
@@ -136,10 +136,10 @@ function App() {
               </linearGradient>
             </defs>
             <motion.path 
-              d="M50 0 C90 200, 10 400, 50 600 C90 800, 10 900, 50 1000" 
+              d="M20 0 C45 200, 5 400, 30 600 C55 800, 15 900, 25 1000" 
               fill="none" 
               stroke="url(#line-gradient)" 
-              strokeWidth="4" 
+              strokeWidth="1.5" 
               style={{ pathLength: stickyScroll }}
             />
           </svg>
@@ -265,7 +265,7 @@ function App() {
           <p>Open source. Built with care for macOS.</p>
           <div className="footer-links">
             <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer">GitHub Source</a>
-            <a href="https://twitter.com/abhiswrld" target="_blank" rel="noreferrer">Twitter / X</a>
+            <a href="https://www.linkedin.com/in/abhinav-khanna06" target="_blank" rel="noreferrer">LinkedIn</a>
             <a href="mailto:hello@glide-macos.app">Contact</a>
           </div>
         </div>
