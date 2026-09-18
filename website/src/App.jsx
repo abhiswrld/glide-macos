@@ -135,23 +135,25 @@ function App() {
             </h1>
 
             <div className="hero-cta">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" className="btn-primary btn-large">
-                  Get Glide Pro - $5
-                </a>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" target="_blank" rel="noreferrer" className="btn-primary btn-large">
+                    Get Glide Pro - $5
+                  </a>
+                  <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
+                    View Source
+                  </a>
+                </div>
                 {remainingFree > 0 ? (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
-                    🎉 Only {remainingFree} free copies left with code <strong>EARLYBIRD</strong>
-                  </span>
+                  <div className="promo-pill">
+                    {remainingFree} free copies left &middot; code: <strong>EARLYBIRD</strong>
+                  </div>
                 ) : (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
-                    Early bird promo has ended!
-                  </span>
+                  <div className="promo-pill">
+                    Early bird promo has ended
+                  </div>
                 )}
               </div>
-              <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary" style={{ alignSelf: 'flex-start' }}>
-                View Source
-              </a>
             </div>
 
             <p className="hero-requirements hero-pill" style={{ marginTop: '16px' }}>
