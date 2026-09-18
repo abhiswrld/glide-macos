@@ -175,6 +175,8 @@ struct PopoverView: View {
                     Text("\(s.percent)")
                         .font(.system(size: 64, weight: .bold, design: .rounded))
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                     Text("%")
                         .font(.title.weight(.bold))
                         .foregroundStyle(.secondary)
@@ -202,7 +204,7 @@ struct PopoverView: View {
     @ViewBuilder
     private func stateLabel(_ s: BatterySnapshot) -> some View {
         let targetLimit = primaryChargeLimit
-        let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
+        let isAtOrAboveLimit = s.isPluggedIn && s.percent >= targetLimit
 
         Group {
             if isHeatProtecting {
@@ -213,10 +215,10 @@ struct PopoverView: View {
                 statePill("Discharging", icon: "bolt.slash.fill", color: GlideTheme.signalRed)
             } else if isSailing {
                 statePill("Sailing", icon: "wind", color: GlideTheme.blue)
-            } else if isEffectivelyCharging {
-                statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen)
-            } else if s.isPluggedIn && s.percent >= targetLimit {
+            } else if isAtOrAboveLimit {
                 statePill("Holding", icon: "pause.fill", color: GlideTheme.orange)
+            } else if s.isCharging || (s.isPluggedIn && s.percent < targetLimit) {
+                statePill("Charging", icon: "bolt.fill", color: GlideTheme.signalGreen)
             } else if s.isFull {
                 statePill("Full", icon: "checkmark", color: .secondary)
             } else {
@@ -228,10 +230,12 @@ struct PopoverView: View {
     @ViewBuilder
     private func powerDrawPill(_ s: BatterySnapshot) -> some View {
         if let watts = s.watts {
-            let isDischarging = watts < 0
+            let isAtOrAboveLimit = s.isPluggedIn && s.percent >= primaryChargeLimit
+            let displayWatts = (isAtOrAboveLimit && watts > 0) ? 0.0 : watts
+            let isDischarging = displayWatts < 0
             let color = isDischarging ? GlideTheme.signalRed : GlideTheme.signalGreen
             let icon = isDischarging ? "arrow.down.forward" : "arrow.up.right"
-            statePill(String(format: "%.1f W", abs(watts)), icon: icon, color: color)
+            statePill(String(format: "%.1f W", abs(displayWatts)), icon: icon, color: color)
         } else {
             statePill("— W", icon: "bolt.fill", color: .secondary)
         }
