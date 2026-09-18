@@ -121,6 +121,14 @@ function App() {
             }}>FAQ</a>
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
+          <a href="#pricing" onClick={(e) => {
+            e.preventDefault();
+            const el = document.querySelector('#pricing');
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              window.scrollTo({ top: window.scrollY + rect.top, behavior: 'instant' });
+            }
+          }} className="btn-primary btn-small">Pricing</a>
         </div>
       </nav>
 
@@ -141,7 +149,7 @@ function App() {
                     const el = document.querySelector('#pricing');
                     if (el) {
                       const rect = el.getBoundingClientRect();
-                      window.scrollTo({ top: window.scrollY + rect.top, behavior: 'smooth' });
+                      window.scrollTo({ top: window.scrollY + rect.top, behavior: 'instant' });
                     }
                   }} className="btn-primary btn-large">
                     Get Glide

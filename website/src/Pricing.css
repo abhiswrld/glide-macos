@@ -81,8 +81,7 @@
 }
 
 .pricing-currency {
-  font-size: 1.5rem;
-  vertical-align: super;
+  font-size: 1.75rem;
   margin-right: 4px;
 }
 
@@ -121,7 +120,7 @@
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 16px;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   color: #ffffff;
 }
 
