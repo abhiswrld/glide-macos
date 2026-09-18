@@ -383,9 +383,13 @@ final class BatteryModel: ObservableObject {
 
     private static func loadHistory() -> [BatteryHistoryEntry] {
         guard FileManager.default.fileExists(atPath: historyURL.path),
-              let data = try? Data(contentsOf: historyURL),
-              let entries = try? JSONDecoder().decode([BatteryHistoryEntry].self, from: data)
+              let data = try? Data(contentsOf: historyURL)
         else { return [] }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        
+        guard let entries = try? decoder.decode([BatteryHistoryEntry].self, from: data) else { return [] }
         return entries
     }
 
