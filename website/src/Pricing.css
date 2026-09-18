@@ -18,8 +18,16 @@
 }
 
 .pricing-subtitle {
-  font-size: 1.2rem;
-  color: #a1a1a6;
+  font-size: 1.1rem;
+  color: #e5e5ea;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 32px;
+  padding: 12px 24px;
+  display: inline-block;
+  margin-top: 8px;
 }
 
 .pricing-grid {
@@ -30,23 +38,23 @@
 }
 
 .pricing-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 40px;
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
 .pricing-card.pro {
-  background: rgba(255, 46, 147, 0.1);
+  background: rgba(15, 0, 5, 0.4); /* Deep black with a faint hint of pink/magenta */
   border: 1px solid rgba(255, 46, 147, 0.4);
   position: relative;
-  box-shadow: 0 8px 32px 0 rgba(255, 46, 147, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(255, 46, 147, 0.15);
 }
 
 .pricing-badge {
