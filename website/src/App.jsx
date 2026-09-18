@@ -167,7 +167,7 @@ function App() {
               <motion.div className="feature-glass-card" style={{ opacity: card5Opacity, scale: card5Scale }}>
                 <div className="feature-glass-icon"><Cpu size={40} /></div>
                 <h4>Highly Optimized</h4>
-                <p>Zero CPU overhead. Precise telemetry. Advanced features like heat protection and MagSafe control, built directly on Apple's SMC.</p>
+                <p>Native, efficient, and fast.</p>
               </motion.div>
 
           </div>
