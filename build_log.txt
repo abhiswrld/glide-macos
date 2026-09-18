@@ -1,0 +1,142 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme Glide -project Glide.xcodeproj -configuration Debug build
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  GlideCore: /Users/abhinav/Documents/Glide/Packages/GlideCore
+  Sparkle: https://github.com/sparkle-project/Sparkle @ 2.10.0
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-000A39CC0A29801E, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00006000-000A39CC0A29801E, name:My Mac }
+{ platform:macOS, name:Any Mac }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (5 targets)
+    Target 'Glide' in project 'Glide'
+        ➜ Explicit dependency on target 'glide-daemon' in project 'Glide'
+        ➜ Explicit dependency on target 'Sparkle-product' in project 'Sparkle'
+        ➜ Explicit dependency on target 'GlideCore-product' in project 'GlideCore'
+    Target 'Sparkle-product' in project 'Sparkle' (no dependencies)
+    Target 'glide-daemon' in project 'Glide'
+        ➜ Explicit dependency on target 'GlideCore-product' in project 'GlideCore'
+    Target 'GlideCore-product' in project 'GlideCore'
+        ➜ Explicit dependency on target 'GlideCore' in project 'GlideCore'
+    Target 'GlideCore' in project 'GlideCore' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 4996502c14d14f9ec0204bd9a2a0e83b
+Build description path: /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/XCBuildData/4996502c14d14f9ec0204bd9a2a0e83b.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache
+    cd /Users/abhinav/Documents/Glide/Glide.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -o /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache
+
+ProcessInfoPlistFile /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/Glide.app/Contents/Info.plist /Users/abhinav/Documents/Glide/Glide/Info.plist (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-infoPlistUtility /Users/abhinav/Documents/Glide/Glide/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/Glide.app/Contents/PkgInfo -expandbuildsettings -platform macosx -scanforprivacyfile /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/Glide.app/Contents/Frameworks/Sparkle.framework -o /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/Glide.app/Contents/Info.plist
+
+SwiftDriver Glide normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Glide -Onone @/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -target arm64-apple-macos15.0 -g -module-cache-path /Users/abhinav/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug -F /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/PackageFrameworks -F /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache -output-file-map /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/abhinav/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /Users/abhinav/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide_const_extract_protocols.json -Xcc -iquote -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-generated-files.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-own-target-headers.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide-78aa2f6889821c8513a0eb70fda2691f-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-project-headers.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/include -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources-normal/arm64 -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources/arm64 -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide-Swift.h -working-directory /Users/abhinav/Documents/Glide -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ PopoverView.swift /Users/abhinav/Documents/Glide/Glide/PopoverView.swift (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/PopoverView.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile PopoverView.swift
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Glide (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    
+
+SwiftCompile normal arm64 Compiling\ LicenseActivationView.swift /Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift (in target 'Glide' from project 'Glide')
+/Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift:11:25: error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)
+ 9 |     @State private var errorMessage: String?
+10 |     
+11 |     var body: some View {
+   |                         `- error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)
+12 |         VStack(spacing: 20) {
+13 |             VStack(spacing: 8) {
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/abhinav/Documents/Glide/Glide/AppDelegate.swift /Users/abhinav/Documents/Glide/Glide/BatteryModel.swift /Users/abhinav/Documents/Glide/Glide/DaemonModel.swift /Users/abhinav/Documents/Glide/Glide/GlideApp.swift /Users/abhinav/Documents/Glide/Glide/HistoryView.swift /Users/abhinav/Documents/Glide/Glide/PopoverView.swift /Users/abhinav/Documents/Glide/Glide/SettingsView.swift /Users/abhinav/Documents/Glide/Glide/OnboardingView.swift /Users/abhinav/Documents/Glide/Glide/LicenseManager.swift /Users/abhinav/Documents/Glide/Glide/SparkleManager.swift -primary-file /Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift -emit-dependencies-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.d -emit-const-values-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.swiftconstvalues -emit-reference-dependencies-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.swiftdeps -serialize-diagnostics-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.dia -target arm64-apple-macos15.0 -disable-cross-import-overlay-search -swift-module-cross-import UserNotifications /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/UserNotifications.framework/Modules/UserNotifications.swiftcrossimport/AppIntents.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -I /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug -F /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/PackageFrameworks -F /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug -module-cache-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -swift-version 5 -Onone -D DEBUG -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/abhinav/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/abhinav/Documents/Glide -enable-anonymous-context-mangled-names -file-compilation-dir /Users/abhinav/Documents/Glide -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -iquote -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-generated-files.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-own-target-headers.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide-78aa2f6889821c8513a0eb70fda2691f-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Glide-project-headers.hmap -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Products/Debug/include -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources-normal/arm64 -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources/arm64 -Xcc -I/Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name Glide -const-gather-protocols-file /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.0 -target-sdk-version 27.0 -target-sdk-name macosx27.0 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.o -debug-module-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/Glide.build/Debug/Glide.build/Objects-normal/arm64/Glide.swiftmodule -index-unit-output-path /Glide.build/Debug/Glide.build/Objects-normal/arm64/LicenseActivationView.o -index-store-path /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile LicenseActivationView.swift
+
+SwiftCompile normal arm64 Compiling\ OnboardingView.swift /Users/abhinav/Documents/Glide/Glide/OnboardingView.swift (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/OnboardingView.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile OnboardingView.swift
+
+/Users/abhinav/Documents/Glide/Glide/OnboardingView.swift:12:9: warning: cannot use generic class 'Autoconnect' in a property declaration member of a type not marked '@_implementationOnly'; 'Combine' was not imported by this file
+ 10 |     @State private var installing = false
+ 11 |     @State private var retryCount = 0
+ 12 |     let timer = Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()
+    |         `- warning: cannot use generic class 'Autoconnect' in a property declaration member of a type not marked '@_implementationOnly'; 'Combine' was not imported by this file
+ 13 |     
+ 14 |     var onComplete: () -> Void
+
+Combine.Publishers.Autoconnect:2:14: note: generic class declared here
+ 1 | enum Publishers {
+ 2 | public class Autoconnect<Upstream> : Publisher where Upstream : ConnectablePublisher {
+   |              `- note: generic class declared here
+ 3 |     public typealias Output = Upstream.Output
+ 4 |     public typealias Failure = Upstream.Failure
+
+SwiftCompile normal arm64 Compiling\ HistoryView.swift /Users/abhinav/Documents/Glide/Glide/HistoryView.swift (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/HistoryView.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile HistoryView.swift
+
+SwiftCompile normal arm64 Compiling\ SettingsView.swift /Users/abhinav/Documents/Glide/Glide/SettingsView.swift (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/SettingsView.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile SettingsView.swift
+
+SwiftCompile normal arm64 Compiling\ AppDelegate.swift /Users/abhinav/Documents/Glide/Glide/AppDelegate.swift (in target 'Glide' from project 'Glide')
+
+SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/AppDelegate.swift (in target 'Glide' from project 'Glide')
+    cd /Users/abhinav/Documents/Glide
+    builtin-SwiftPerFileCompile AppDelegate.swift
+
+PruneExplicitPrecompiledModules /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/abhinav/Library/Developer/Xcode/DerivedData/Glide-fxbgkeutrinogoevzmopdiqxrlzd/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/abhinav/Library/Developer/Xcode/DerivedData/SDKExplicitPrecompiledModules
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ LicenseActivationView.swift /Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift (in target 'Glide' from project 'Glide')
+	SwiftCompile normal arm64 /Users/abhinav/Documents/Glide/Glide/LicenseActivationView.swift (in target 'Glide' from project 'Glide')
+	Building project Glide with scheme Glide and configuration Debug
+(3 failures)

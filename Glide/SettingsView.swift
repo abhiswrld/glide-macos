@@ -243,22 +243,29 @@ struct SettingsView: View {
                     .padding(.top, 4)
                 }
                 
-                settingsDivider
-
-                Button(action: {
-                    SparkleManager.shared.checkForUpdates()
-                }) {
-                    Text("Check for Updates")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(GlideTheme.blue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(GlideTheme.blue.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
             }
             .glassCard()
+            
+            Button(action: {
+                SparkleManager.shared.checkForUpdates()
+            }) {
+                Text("Check for Updates")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(GlideTheme.blue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(GlideTheme.blue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.black.opacity(0.4))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
+            )
         }
     }
     

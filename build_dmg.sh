@@ -64,3 +64,16 @@ else
 fi
 
 echo "✅ Done! DMG created at $BUILD_DIR/$DMG_NAME"
+
+# Automatically generate appcast.xml with the correct GitHub Releases URL for this version
+APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_BUNDLE/Contents/Info.plist")
+
+echo "📡 Generating appcast for version $APP_VERSION..."
+./build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast \
+    --download-url-prefix "https://github.com/abhiswrld/glide-macos/releases/download/v$APP_VERSION/" \
+    "$BUILD_DIR"
+
+if [ -f "$BUILD_DIR/appcast.xml" ]; then
+    cp "$BUILD_DIR/appcast.xml" .
+    echo "✅ Updated appcast.xml generated and copied to root!"
+fi

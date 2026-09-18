@@ -62,6 +62,7 @@ struct PopoverView: View {
     @EnvironmentObject var daemon: DaemonModel
     
     @ObservedObject private var license = LicenseManager.shared
+    @ObservedObject private var smartCharging = SmartChargingModel.shared
 
     @State private var draggingLimit: Double?
     @State private var selectedTab: GlideTab = .battery
@@ -75,6 +76,8 @@ struct PopoverView: View {
     @AppStorage("sailingEnabled") private var sailingEnabled: Bool = false
     @AppStorage("sailingLowerLimit") private var sailingLowerLimit: Int = 75
     @AppStorage("isSailing") private var isSailing: Bool = false
+    @AppStorage("smartChargingEnabled") private var smartChargingEnabled: Bool = false
+    @AppStorage("isSmartPausing") private var isSmartPausing: Bool = false
     @AppStorage("heatProtectionEnabled") private var heatProtectionEnabled: Bool = false
     @AppStorage("heatProtectionThreshold") private var heatProtectionThreshold: Int = 35
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
@@ -214,6 +217,8 @@ struct PopoverView: View {
                 statePill("Calibrating", icon: "arrow.triangle.2.circlepath", color: GlideTheme.purple)
             } else if isForceDischarging {
                 statePill("Discharging", icon: "bolt.slash.fill", color: GlideTheme.signalRed)
+            } else if isSmartPausing {
+                statePill("Smart Paused", icon: "brain.head.profile", color: GlideTheme.purple)
             } else if isSailing {
                 statePill("Sailing", icon: "wind", color: GlideTheme.blue)
             } else if isAtOrAboveLimit {
@@ -532,6 +537,55 @@ struct PopoverView: View {
             .padding(.bottom, 4)
 
             VStack(spacing: 0) {
+                // Smart Charging
+                featureToggleRow(
+                    icon: "brain.head.profile",
+                    iconColor: GlideTheme.purple,
+                    label: "Smart Charging",
+                    subtitle: "Learn schedule to save battery",
+                    isOn: $smartChargingEnabled
+                )
+                
+                if smartChargingEnabled {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.06))
+                        .frame(height: 0.5)
+                        .padding(.leading, 40)
+                    
+                    HStack {
+                        Spacer().frame(width: 40)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            if smartCharging.predictedUnplugTime != nil || smartCharging.userOverrideTime != nil {
+                                DatePicker(
+                                    "Finish charging by",
+                                    selection: Binding(
+                                        get: { smartCharging.predictedUnplugTime ?? Date() },
+                                        set: { smartCharging.overridePrediction(to: $0) }
+                                    ),
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .datePickerStyle(.compact)
+                                .tint(GlideTheme.purple)
+                            } else {
+                                Text("Learning your schedule...")
+                                    .font(.caption.italic())
+                                    .foregroundStyle(.secondary)
+                                    .padding(.vertical, 6)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                        .padding(.trailing, 12)
+                    }
+                }
+                
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 0.5)
+                    .padding(.leading, 40)
+
                 // Sailing Mode
                 featureToggleRow(
                     icon: "wind",

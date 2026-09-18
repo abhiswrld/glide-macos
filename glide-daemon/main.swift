@@ -22,6 +22,55 @@ final class Daemon: NSObject, GlideDaemonProtocol {
     func ping(withReply reply: @escaping (String) -> Void) {
         reply("glide-daemon \(GlideCore.version)")
     }
+
+    func setForceDischarge(_ enabled: Bool, withReply reply: @escaping (String?) -> Void) {
+        do {
+            guard let client = SMC.shared else {
+                reply("failed to connect to SMC")
+                return
+            }
+            
+            // Apple Silicon force discharge (disable power adapter)
+            if (try? client.readKey("CHIE")) != nil {
+                try client.writeKey("CHIE", bytes: enabled ? [0x08] : [0x00])
+                reply(nil)
+                return
+            }
+            
+            // Intel force discharge
+            if (try? client.readKey("CH0I")) != nil {
+                try client.writeKey("CH0I", bytes: enabled ? [0x01] : [0x00])
+                reply(nil)
+                return
+            }
+            
+            reply("No supported SMC force discharge key found on this Mac.")
+        } catch {
+            reply("\(error)")
+        }
+    }
+    
+    func setMagSafeLED(_ color: Int, withReply reply: @escaping (String?) -> Void) {
+        do {
+            guard let client = SMC.shared else {
+                reply("failed to connect to SMC")
+                return
+            }
+            
+            // 0 = default behavior (let SMC decide)
+            // 1 = green
+            // 2 = orange
+            // 3 = off
+            if (try? client.readKey("ACLC")) != nil {
+                try client.writeKey("ACLC", bytes: [UInt8(color)])
+                reply(nil)
+            } else {
+                reply("MagSafe LED control not supported on this Mac (ACLC key missing).")
+            }
+        } catch {
+            reply("\(error)")
+        }
+    }
 }
 
 func runService() {

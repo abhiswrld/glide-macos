@@ -82,6 +82,9 @@ final class BatteryModel: ObservableObject {
     func refresh() {
         let s = BatteryReader.read()
         if s.isPluggedIn != lastPluggedIn {
+            if let last = lastPluggedIn, last == true && s.isPluggedIn == false {
+                SmartChargingModel.shared.recordUnplug()
+            }
             lastPluggedIn = s.isPluggedIn
             powerChangedAt = Date()
         }
@@ -95,6 +98,7 @@ final class BatteryModel: ObservableObject {
         if !UserDefaults.standard.bool(forKey: "isHeatProtecting") {
             if handleCalibration(s) { return }
             if handleForceDischarge(s) { return }
+            if handleSmartCharging(s) { return }
             handleSailing(s)
         }
         
@@ -153,6 +157,73 @@ final class BatteryModel: ObservableObject {
                     DaemonModel.shared?.setLimit(pauseLimit)
                 }
             }
+        }
+    }
+    
+    private func handleSmartCharging(_ s: BatterySnapshot) -> Bool {
+        let defaults = UserDefaults.standard
+        let isEnabled = defaults.bool(forKey: "smartChargingEnabled")
+        let isSmartPausing = defaults.bool(forKey: "isSmartPausing")
+        let smartModel = SmartChargingModel.shared
+        
+        if !isEnabled {
+            if isSmartPausing {
+                defaults.set(false, forKey: "isSmartPausing")
+            }
+            return false
+        }
+        
+        guard s.isPluggedIn else {
+            if isSmartPausing {
+                defaults.set(false, forKey: "isSmartPausing")
+            }
+            return false
+        }
+        
+        guard let targetDate = smartModel.predictedUnplugTime else {
+            if isSmartPausing {
+                defaults.set(false, forKey: "isSmartPausing")
+            }
+            return false
+        }
+        
+        let timeRemaining = targetDate.timeIntervalSince(Date())
+        let primaryLimitRaw = defaults.integer(forKey: "primaryChargeLimit")
+        let primaryLimit = primaryLimitRaw == 0 ? 80 : primaryLimitRaw
+        
+        // If > 1.5 hours away
+        if timeRemaining > 5400 {
+            if s.percent >= primaryLimit {
+                // We reached the user's base limit, pause there
+                if !isSmartPausing {
+                    defaults.set(true, forKey: "isSmartPausing")
+                }
+                if let currentLimit = DaemonModel.shared?.limit, currentLimit != primaryLimit {
+                    DaemonModel.shared?.setLimit(primaryLimit)
+                }
+                return true
+            } else {
+                // Keep charging up to the primary limit
+                if isSmartPausing {
+                    defaults.set(false, forKey: "isSmartPausing")
+                }
+                return false // Let sailing or standard charging handle getting to primaryLimit
+            }
+        } else if timeRemaining > 0 {
+            // Less than 1.5 hours away, charge to 100%
+            if isSmartPausing {
+                defaults.set(false, forKey: "isSmartPausing")
+            }
+            if let currentLimit = DaemonModel.shared?.limit, currentLimit != 100 {
+                DaemonModel.shared?.setLimit(100)
+            }
+            return true
+        } else {
+            // Target passed
+            if isSmartPausing {
+                defaults.set(false, forKey: "isSmartPausing")
+            }
+            return false
         }
     }
 
