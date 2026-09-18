@@ -84,7 +84,7 @@ function App() {
               const el = document.querySelector('.sticky-features-section');
               if (el) {
                 const rect = el.getBoundingClientRect();
-                window.scrollBy({ top: rect.top, behavior: 'smooth' });
+                window.scrollTo({ top: window.scrollY + rect.top, behavior: 'smooth' });
               }
             }}>Features</a>
             <a href="#faq" onClick={(e) => { 
@@ -106,7 +106,7 @@ function App() {
       <section className="hero-section">
         <div className="hero-container">
           <div className="hero-text-column">
-            <h1 className="hero-title">A native macOS<br />battery monitor.</h1>
+            <h1 className="hero-title"><span style={{ whiteSpace: 'nowrap' }}>A native macOS</span><br />battery monitor.</h1>
             
             <div className="hero-cta">
               <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-large">
