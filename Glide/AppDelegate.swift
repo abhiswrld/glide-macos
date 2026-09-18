@@ -345,6 +345,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     private func symbol(for s: BatterySnapshot) -> String {
+        if s.isCharging { return "battery.100.bolt" }
+        
         let level: String
         switch s.percent {
         case ..<13:  level = "battery.0"
@@ -353,10 +355,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         case ..<88:  level = "battery.75"
         default:     level = "battery.100"
         }
-        guard s.isCharging,
-              NSImage(systemSymbolName: "\(level).bolt", accessibilityDescription: nil) != nil
-        else { return level }
-        return "\(level).bolt"
+        return level
     }
 
     @objc private func togglePopover() {
@@ -377,5 +376,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     
     func popoverDidClose(_ notification: Notification) {
         model.setUIVisibility(false)
+    }
+}
+import Foundation
+import UserNotifications
+
+@MainActor
+class NotificationManager {
+    static let shared = NotificationManager()
+    
+    private init() {
+        requestAuthorization()
+    }
+    
+    func requestAuthorization() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error = error {
+                NSLog("[Glide] Notification authorization error: \(error.localizedDescription)")
+            } else {
+                NSLog("[Glide] Notification authorization granted: \(granted)")
+            }
+        }
+    }
+    
+    func sendNotification(title: String, body: String, identifier: String = UUID().uuidString) {
+        let isEnabled = UserDefaults.standard.bool(forKey: "systemNotifications")
+        guard isEnabled else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                NSLog("[Glide] Failed to send notification: \(error.localizedDescription)")
+            } else {
+                NSLog("[Glide] Notification sent: \(title)")
+            }
+        }
     }
 }

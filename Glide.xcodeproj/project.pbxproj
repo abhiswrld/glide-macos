@@ -20,6 +20,7 @@
 		BB11111111111111BBBBBBBB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222BBBBBBBB /* SettingsView.swift */; };
 		BEF9004284130DD79D77A42C /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65487F46BEC14BC4D2962A39 /* PopoverView.swift */; };
 		BF81CB4D6FF2C98F9A15AC38 /* DaemonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4770F766204478158D10279C /* DaemonModel.swift */; };
+		BFBAE38A9082B022C223DE55 /* LicenseActivationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A62F7F260857BB7EBF954 /* LicenseActivationView.swift */; };
 		C014BC68DBAB861750920BCF /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = EDF212A382C5623164794346 /* GlideCore */; };
 		D40E74F796CAB689CD5924FE /* com.abhinav.glide-daemon.plist in Embed Daemon Plist */ = {isa = PBXBuildFile; fileRef = 07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */; };
 		EA0676687F0E802049377FFC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CF4FF521E906468489A321 /* OnboardingView.swift */; };
@@ -63,6 +64,7 @@
 /* Begin PBXFileReference section */
 		075713886D20E8C69DE89739 /* LicenseManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LicenseManager.swift; sourceTree = "<group>"; };
 		07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "com.abhinav.glide-daemon.plist"; path = "glide-daemon/com.abhinav.glide-daemon.plist"; sourceTree = "<group>"; };
+		2F0A62F7F260857BB7EBF954 /* LicenseActivationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LicenseActivationView.swift; sourceTree = "<group>"; };
 		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4770F766204478158D10279C /* DaemonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonModel.swift; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				93CF4FF521E906468489A321 /* OnboardingView.swift */,
 				075713886D20E8C69DE89739 /* LicenseManager.swift */,
 				9E0CDE6FBCF3C36E3A500776 /* SparkleManager.swift */,
+				2F0A62F7F260857BB7EBF954 /* LicenseActivationView.swift */,
 			);
 			path = Glide;
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 				EA0676687F0E802049377FFC /* OnboardingView.swift in Sources */,
 				2BA87119CF6C8C8810DD4381 /* LicenseManager.swift in Sources */,
 				171003C96C3EB417BA04AFE9 /* SparkleManager.swift in Sources */,
+				BFBAE38A9082B022C223DE55 /* LicenseActivationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

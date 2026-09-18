@@ -123,11 +123,28 @@ final class BatteryModel: ObservableObject {
                 defaults.set(true, forKey: "isHeatProtecting")
                 let pauseLimit = max(60, s.percent - (s.percent % 5))
                 DaemonModel.shared?.setLimit(pauseLimit)
+                
+                Task { @MainActor in
+                    NotificationManager.shared.sendNotification(
+                        title: "Charging Paused",
+                        body: "Battery temperature exceeded limit. Charging will resume once cooled down.",
+                        identifier: "heatProtection"
+                    )
+                }
             }
         } else {
             // Cool down: Give it a 2-degree hysteresis so it doesn't bounce
             if currentTemp <= Double(threshold - 2) {
                 defaults.set(false, forKey: "isHeatProtecting")
+                
+                Task { @MainActor in
+                    NotificationManager.shared.sendNotification(
+                        title: "Charging Resumed",
+                        body: "Battery has cooled down.",
+                        identifier: "heatProtection"
+                    )
+                }
+                
                 // Restoring the limit is handled seamlessly by handleSailing's failsafe on the next tick!
             } else {
                 // Ensure the pause limit is maintained
@@ -248,6 +265,15 @@ final class BatteryModel: ObservableObject {
                 let primaryLimit = primaryLimitRaw == 0 ? 80 : primaryLimitRaw
                 
                 defaults.set(0, forKey: "calibrationPhase")
+                
+                Task { @MainActor in
+                    NotificationManager.shared.sendNotification(
+                        title: "Calibration Complete",
+                        body: "Your battery has been successfully calibrated.",
+                        identifier: "calibrationComplete"
+                    )
+                }
+                
                 DaemonModel.shared?.setForceDischarge(false)
                 DaemonModel.shared?.setLimit(primaryLimit)
             }

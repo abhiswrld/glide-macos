@@ -81,4 +81,21 @@ final class DaemonModel: ObservableObject {
         }
         p.setLimit(value, withReply: onReply)
     }
+
+    func setForceDischarge(_ enabled: Bool) {
+        let p = proxy
+        p.setForceDischarge(enabled) { error in
+            if let error {
+                print("Failed to set force discharge: \(error)")
+            }
+        }
+    }
+    func setMagSafeLED(_ color: Int) {
+        let p = proxy
+        p.setMagSafeLED(color) { error in
+            if let error {
+                print("Failed to set MagSafe LED: \(error)")
+            }
+        }
+    }
 }

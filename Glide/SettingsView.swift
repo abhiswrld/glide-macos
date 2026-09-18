@@ -11,6 +11,9 @@ struct SettingsView: View {
     @AppStorage("systemNotifications") private var systemNotifications: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("magsafeLEDControlEnabled") private var magsafeLEDControlEnabled: Bool = false
+    
+    @StateObject private var licenseManager = LicenseManager.shared
+    @State private var showActivationSheet = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -22,6 +25,9 @@ struct SettingsView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 16)
+        }
+        .sheet(isPresented: $showActivationSheet) {
+            LicenseActivationView()
         }
     }
 
@@ -105,7 +111,7 @@ struct SettingsView: View {
                 .padding(.vertical, 6)
 
                 settingsDivider
-
+                
                 // System notifications
                 settingsToggleRow(
                     icon: "bell.badge.fill",
@@ -115,7 +121,6 @@ struct SettingsView: View {
                 )
                 
                 settingsDivider
-                
                 // Launch at Login
                 settingsToggleRow(
                     icon: "macwindow",
@@ -175,51 +180,90 @@ struct SettingsView: View {
                 settingsDivider
 
                 HStack(spacing: 12) {
-                    settingsIcon("star.fill", color: GlideTheme.pink)
+                    settingsIcon("star.fill", color: licenseColor)
                     Text("License Status")
                         .font(.subheadline)
                     Spacer()
-                    Text(licenseText)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(GlideTheme.pink)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(GlideTheme.pink.opacity(0.12))
-                        .clipShape(Capsule())
+                    
+                    if case .unverified = licenseManager.status {
+                        Button("Activate Pro") {
+                            showActivationSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(GlideTheme.pink)
+                        .controlSize(.small)
+                    } else if case .error = licenseManager.status {
+                        Button("Activate Pro") {
+                            showActivationSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(GlideTheme.pink)
+                        .controlSize(.small)
+                    } else {
+                        Text(licenseText)
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(licenseColor)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(licenseColor.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
                 }
                 .padding(.vertical, 6)
-            }
-            .glassCard()
 
-            // Check for Updates in its own centered bubble
-            Button {
-                SparkleManager.shared.checkForUpdates()
-            } label: {
-                HStack {
-                    Spacer()
+                if case .licensed = licenseManager.status {
+                    HStack {
+                        Spacer()
+                        Button("Deactivate License") {
+                            licenseManager.deactivateLicense()
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .buttonStyle(.plain)
+                        .onHover { hovering in
+                            if hovering {
+                                NSCursor.pointingHand.push()
+                            } else {
+                                NSCursor.pop()
+                            }
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+                
+                settingsDivider
+
+                Button(action: {
+                    SparkleManager.shared.checkForUpdates()
+                }) {
                     Text("Check for Updates")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(GlideTheme.blue)
-                    Spacer()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(GlideTheme.blue.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
-                .padding(.vertical, 10)
-                .background(Color.white.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                )
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+            .glassCard()
         }
     }
     
     private var licenseText: String {
-        switch LicenseManager.shared.status {
-        case .earlyAdopter: return "Early Adopter" // Emojis removed!
+        switch licenseManager.status {
+        case .earlyAdopter: return "Early Adopter"
         case .licensed: return "Pro"
-        case .trial(let days): return "\(days) days left"
-        case .expired: return "Expired"
+        case .unverified: return "Free"
+        case .error(let msg): return "Error: \(msg)"
+        }
+    }
+    
+    private var licenseColor: Color {
+        switch licenseManager.status {
+        case .earlyAdopter, .licensed: return GlideTheme.pink
+        case .error: return .red
+        case .unverified: return .secondary
         }
     }
 
