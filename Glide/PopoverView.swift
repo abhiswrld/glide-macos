@@ -60,7 +60,8 @@ enum GlideTab: String, CaseIterable {
 struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
     @EnvironmentObject var daemon: DaemonModel
-
+    
+    @ObservedObject private var license = LicenseManager.shared
 
     @State private var draggingLimit: Double?
     @State private var selectedTab: GlideTab = .battery
@@ -512,11 +513,23 @@ struct PopoverView: View {
 
     private var chargingFeaturesSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("CHARGING FEATURES")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.secondary)
-                .padding(.leading, 4)
-                .padding(.bottom, 4)
+            HStack {
+                Text("CHARGING FEATURES")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 4)
+                
+                if !license.isPro {
+                    Text("PRO")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(GlideTheme.pink)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(GlideTheme.pink.opacity(0.15))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            .padding(.bottom, 4)
 
             VStack(spacing: 0) {
                 // Sailing Mode
@@ -672,6 +685,8 @@ struct PopoverView: View {
                 )
             }
             .glassCard()
+            .disabled(!license.isPro)
+            .opacity(license.isPro ? 1.0 : 0.6)
         }
     }
     

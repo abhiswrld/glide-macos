@@ -220,7 +220,8 @@ struct HistoryView: View {
 
                     AreaMark(
                         x: .value("Date", entry.date),
-                        y: .value("Health", entry.healthPercent)
+                        yStart: .value("Min", 70),
+                        yEnd: .value("Health", entry.healthPercent)
                     )
                     
                     .foregroundStyle(

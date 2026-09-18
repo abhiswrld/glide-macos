@@ -47,6 +47,18 @@ struct SettingsView: View {
                         options: [("battery.100", "standard"), ("circle", "circle"), ("battery.100", "vertical")],
                         selection: $menuBarIcon
                     )
+                    .disabled(!licenseManager.isPro)
+                    .opacity(licenseManager.isPro ? 1.0 : 0.6)
+                    
+                    if !licenseManager.isPro {
+                        Text("PRO")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(GlideTheme.pink)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(GlideTheme.pink.opacity(0.15))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
                 }
                 .padding(.vertical, 6)
 
