@@ -266,11 +266,10 @@ function App() {
         <div className="pricing-grid">
           {/* Free Tier */}
           <div className="pricing-card">
-            <h3 className="pricing-name">Free</h3>
+            <h3 className="pricing-name">FREE</h3>
             <p className="pricing-desc">Perfect for basic battery management and longevity.</p>
             <div className="pricing-price">
               <span className="pricing-currency">$</span>0
-              <span className="pricing-period">/forever</span>
             </div>
             <ul className="pricing-features">
               <li className="pricing-feature"><span className="feature-check">✓</span> Set exact charge limits</li>
@@ -286,7 +285,7 @@ function App() {
           {/* Pro Tier */}
           <div className="pricing-card pro">
             <div className="pricing-badge">Most Popular</div>
-            <h3 className="pricing-name">Glide Pro</h3>
+            <h3 className="pricing-name">GLIDE PRO</h3>
             <p className="pricing-desc">Advanced tools to take full control of your Mac's hardware.</p>
             <div className="pricing-price">
               <span className="pricing-currency">$</span>5
