@@ -146,16 +146,10 @@ function App() {
                   }} className="btn-primary btn-large">
                     Get Glide
                   </a>
+                  <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
+                    View Source
+                  </a>
                 </div>
-                {remainingFree > 0 ? (
-                  <div className="promo-pill">
-                    {remainingFree} free copies left &middot; code: <strong>EARLYBIRD</strong>
-                  </div>
-                ) : (
-                  <div className="promo-pill">
-                    Early bird promo has ended
-                  </div>
-                )}
               </div>
             </div>
 
