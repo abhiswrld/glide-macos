@@ -85,20 +85,33 @@ function App() {
       
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">A native macOS<br />battery monitor.</h1>
-          <p className="hero-subtitle">
-            Zero CPU overhead. Precise telemetry. Advanced features like heat protection and MagSafe control, built directly on Apple's SMC.
-          </p>
-          <div className="hero-cta">
-            <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-large">
-              Download for Mac
-            </a>
-            <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
-              View Source
-            </a>
+        <div className="hero-container">
+          <div className="hero-text-column">
+            <h1 className="hero-title">A native macOS<br />battery monitor.</h1>
+            
+            <div className="hero-cta">
+              <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-large">
+                Download for Mac
+              </a>
+              <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
+                View Source
+              </a>
+            </div>
+            
+            <p className="hero-requirements hero-pill">
+              macOS Sonoma or newer &middot; Mac with Apple Silicon required
+            </p>
+
+            <p className="hero-subtitle hero-pill">
+              Zero CPU overhead. Precise telemetry. Advanced features like heat protection and MagSafe control, built directly on Apple's SMC.
+            </p>
           </div>
-          <p className="hero-requirements">macOS Sonoma or newer &middot; Mac with Apple Silicon required</p>
+          
+          <div className="hero-visual-column">
+            <motion.div className="hero-glass-container" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+              <img src="/hero-image.png" alt="Glide Interface" />
+            </motion.div>
+          </div>
         </div>
 
         {/* Mockup container removed as per user request */}
