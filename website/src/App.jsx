@@ -164,11 +164,11 @@ function App() {
                <p>Force discharge and modify MagSafe LEDs.</p>
             </motion.div>
 
-            <motion.div className="feature-glass-card" style={{ opacity: card5Opacity, scale: card5Scale }}>
-               <div className="feature-glass-icon"><Cpu size={40} /></div>
-               <h4>Highly Optimized</h4>
-               <p>0.0% CPU usage. Native, efficient, and fast.</p>
-            </motion.div>
+              <motion.div className="feature-glass-card" style={{ opacity: card5Opacity, scale: card5Scale }}>
+                <div className="feature-glass-icon"><Cpu size={40} /></div>
+                <h4>Highly Optimized</h4>
+                <p>Zero CPU overhead. Precise telemetry. Advanced features like heat protection and MagSafe control, built directly on Apple's SMC.</p>
+              </motion.div>
 
           </div>
 
@@ -232,6 +232,7 @@ function App() {
           <p>Open source. Built with care for macOS.</p>
           <div className="footer-links">
             <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer">GitHub Source</a>
+            <a href="https://twitter.com/abhiswrld" target="_blank" rel="noreferrer">Twitter / X</a>
             <a href="mailto:hello@glide-macos.app">Contact</a>
           </div>
         </div>
