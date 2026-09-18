@@ -277,7 +277,7 @@ function App() {
               <li className="pricing-feature"><span className="feature-check">✓</span> Open source</li>
               <li className="pricing-feature"><span className="feature-check">✓</span> Community support</li>
             </ul>
-            <a href="https://github.com/abhiswrld/glide-macos/releases/latest" target="_blank" rel="noreferrer" className="pricing-btn free">
+            <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="pricing-btn free">
               Download Free
             </a>
           </div>
@@ -289,7 +289,6 @@ function App() {
             <p className="pricing-desc">Advanced tools to take full control of your Mac's hardware.</p>
             <div className="pricing-price">
               <span className="pricing-currency">$</span>5
-              <span className="pricing-period">/lifetime</span>
             </div>
             <ul className="pricing-features">
               <li className="pricing-feature"><span className="feature-check">✓</span> Everything in Free</li>

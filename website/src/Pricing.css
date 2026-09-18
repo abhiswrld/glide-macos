@@ -94,18 +94,18 @@
 }
 
 .pricing-name {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 20px;
   text-align: center;
   text-transform: uppercase;
 }
 
 .pricing-desc {
   color: #e5e5ea;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   line-height: 1.5;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
   min-height: 44px;
 }
 
