@@ -79,8 +79,22 @@ function App() {
           </div>
           
           <div className="nav-links">
-            <a href="#features" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }}>Features</a>
-            <a href="#faq" onClick={(e) => { e.preventDefault(); document.querySelector('.faq-section').scrollIntoView(); }}>FAQ</a>
+            <a href="#features" onClick={(e) => { 
+              e.preventDefault(); 
+              const el = document.querySelector('.sticky-features-section');
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                window.scrollBy({ top: rect.top, behavior: 'smooth' });
+              }
+            }}>Features</a>
+            <a href="#faq" onClick={(e) => { 
+              e.preventDefault(); 
+              const el = document.querySelector('.faq-section');
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                window.scrollBy({ top: rect.top, behavior: 'instant' });
+              }
+            }}>FAQ</a>
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
 
@@ -126,24 +140,6 @@ function App() {
       <section ref={stickyRef} className="sticky-features-section" style={{ height: '500vh', position: 'relative' }}>
         <div className="sticky-container">
           
-          {/* Swerving background line that draws itself as you scroll */}
-          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.35, pointerEvents: 'none' }} preserveAspectRatio="none" viewBox="0 0 100 1000">
-            <defs>
-              <linearGradient id="line-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#8A2BE2" />
-                <stop offset="50%" stopColor="#00BFFF" />
-                <stop offset="100%" stopColor="#8A2BE2" />
-              </linearGradient>
-            </defs>
-            <motion.path 
-              d="M20 0 C45 200, 5 400, 30 600 C55 800, 15 900, 25 1000" 
-              fill="none" 
-              stroke="url(#line-gradient)" 
-              strokeWidth="1.5" 
-              style={{ pathLength: stickyScroll }}
-            />
-          </svg>
-
           <div className="sticky-text-column" style={{ zIndex: 1 }}>
             <motion.div className="scroll-text-block" style={{ opacity: text1Opacity, y: text1Y }}>
               <h3>Stay in the loop.</h3>
