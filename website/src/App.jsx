@@ -102,7 +102,7 @@ function App() {
 
         {/* Scaled down container dropping from the "menu bar" */}
         <motion.div className="mockup-container" style={{ y: mockupY, scale: mockupScaleSpring }}>
-          <img src="/shot1-stats.png" alt="Glide Interface" />
+          <img src="/hero-stats.png" alt="Glide Interface" />
         </motion.div>
         
       </section>
