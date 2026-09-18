@@ -98,6 +98,7 @@ function App() {
               View Source
             </a>
           </div>
+          <p className="hero-requirements">macOS Sonoma or newer &middot; Mac with Apple Silicon required</p>
         </div>
 
         {/* Mockup container removed as per user request */}
