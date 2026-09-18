@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Activity, Shield, Settings, BatteryCharging, Zap, Cpu } from 'lucide-react'
 import './index.css'
@@ -20,6 +20,21 @@ function AccordionItem({ question, answer }) {
 }
 
 function App() {
+  const [remainingFree, setRemainingFree] = useState(250)
+  const scrollRef = useRef(null)
+
+  useEffect(() => {
+    // Fetch live discount usage count
+    fetch('/api/counter')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.remaining === 'number') {
+          setRemainingFree(data.remaining)
+        }
+      })
+      .catch(err => console.error("Failed to fetch live counter", err))
+  }, [])
+
   const { scrollYProgress: globalScroll } = useScroll()
   const stickyRef = useRef(null)
 
@@ -106,7 +121,7 @@ function App() {
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
 
-          <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-small">Download</a>
+          <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" className="btn-primary btn-small">Get Glide Pro</a>
         </div>
       </nav>
 
@@ -120,15 +135,26 @@ function App() {
             </h1>
 
             <div className="hero-cta">
-              <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-large">
-                Download for Mac
-              </a>
-              <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" className="btn-primary btn-large">
+                  Get Glide Pro - $5
+                </a>
+                {remainingFree > 0 ? (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                    🎉 Only {remainingFree} free copies left with code <strong>EARLYBIRD</strong>
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                    Early bird promo has ended!
+                  </span>
+                )}
+              </div>
+              <a href="https://github.com/abhiswrld/glide-macos" target="_blank" rel="noreferrer" className="btn-secondary" style={{ alignSelf: 'flex-start' }}>
                 View Source
               </a>
             </div>
 
-            <p className="hero-requirements hero-pill">
+            <p className="hero-requirements hero-pill" style={{ marginTop: '16px' }}>
               macOS Sonoma or newer &middot; Mac with Apple Silicon required
             </p>
 
