@@ -21,12 +21,12 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.3</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
-	<key>SUPublicEDKey</key>
-	<string>pEd64TocHpNW5gWBps8aRdBTBHr5/5fX62gs6IYhUS8=</string>
-	<key>SUFeedURL</key>
-	<string>https://github.com/abhiswrld/glide-macos/releases/latest/download/appcast.xml</string>
+	<string>3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/abhiswrld/glide-macos/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>pEd64TocHpNW5gWBps8aRdBTBHr5/5fX62gs6IYhUS8=</string>
 </dict>
 </plist>
