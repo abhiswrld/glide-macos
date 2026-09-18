@@ -72,14 +72,19 @@ function App() {
       <nav className="nav-container">
         <div className="nav-content">
           <div className="nav-logo">
-            <div className="logo-icon">
-              <Zap size={14} fill="currentColor" />
+            <div className="logo-icon" style={{ display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" alt="Glide" style={{ width: 14, height: 14, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
             </div>
-            <span>Glide</span>
+            Glide
           </div>
-          <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-small">
-            Download
-          </a>
+          
+          <div className="nav-links">
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.querySelector('.sticky-features-section').scrollIntoView({ behavior: 'smooth' }); }}>Features</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); document.querySelector('.faq-section').scrollIntoView({ behavior: 'smooth' }); }}>FAQ</a>
+            <a href="mailto:hello@glide-macos.app">Support</a>
+          </div>
+
+          <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-small">Download</a>
         </div>
       </nav>
       
