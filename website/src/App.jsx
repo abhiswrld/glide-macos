@@ -100,11 +100,7 @@ function App() {
           </div>
         </div>
 
-        {/* Scaled down container dropping from the "menu bar" */}
-        <motion.div className="mockup-container" style={{ y: mockupY, scale: mockupScaleSpring }}>
-          <img src="/hero-stats.png" alt="Glide Interface" />
-        </motion.div>
-        
+        {/* Mockup container removed as per user request */}
       </section>
 
       {/* 5-Step Sticky Scroll Features Section */}
