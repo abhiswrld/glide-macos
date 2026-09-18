@@ -108,6 +108,10 @@ function App() {
           <div className="hero-text-column">
             <h1 className="hero-title"><span style={{ whiteSpace: 'nowrap' }}>A native macOS</span><br />battery monitor.</h1>
             
+            <div className="mini-macbook-container">
+              <img src="/macbook-mini.jpg" alt="Mini MacBook Display" />
+            </div>
+
             <div className="hero-cta">
               <a href="https://github.com/abhiswrld/glide-macos/releases/latest/download/Glide.dmg" className="btn-primary btn-large">
                 Download for Mac

@@ -198,6 +198,23 @@ p {
   text-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
+.mini-macbook-container {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin-left: 8px;
+}
+
+.mini-macbook-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .hero-cta {
   display: flex;
   gap: 16px;
