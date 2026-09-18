@@ -72,14 +72,14 @@ function App() {
       <nav className="nav-container">
         <div className="nav-content">
           <div className="nav-logo">
-            <div className="logo-icon" style={{ display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.png" alt="Glide" style={{ width: 14, height: 14, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+            <div className="logo-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#9b59b6', borderRadius: '6px', width: '24px', height: '24px', marginRight: '4px' }}>
+              <Zap size={14} fill="white" color="white" />
             </div>
             Glide
           </div>
           
           <div className="nav-links">
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.querySelector('.sticky-features-section').scrollIntoView({ behavior: 'smooth' }); }}>Features</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }}>Features</a>
             <a href="#faq" onClick={(e) => { e.preventDefault(); document.querySelector('.faq-section').scrollIntoView({ behavior: 'smooth' }); }}>FAQ</a>
             <a href="mailto:hello@glide-macos.app">Support</a>
           </div>
@@ -123,10 +123,28 @@ function App() {
       </section>
 
       {/* 5-Step Sticky Scroll Features Section */}
-      <section ref={stickyRef} className="sticky-features-section" style={{ height: '500vh' }}>
+      <section ref={stickyRef} className="sticky-features-section" style={{ height: '500vh', position: 'relative' }}>
         <div className="sticky-container">
           
-          <div className="sticky-text-column">
+          {/* Swerving background line that draws itself as you scroll */}
+          <svg style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100%', zIndex: 0, opacity: 0.8 }} preserveAspectRatio="none" viewBox="0 0 100 1000">
+            <defs>
+              <linearGradient id="line-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8A2BE2" />
+                <stop offset="50%" stopColor="#00BFFF" />
+                <stop offset="100%" stopColor="#8A2BE2" />
+              </linearGradient>
+            </defs>
+            <motion.path 
+              d="M50 0 C90 200, 10 400, 50 600 C90 800, 10 900, 50 1000" 
+              fill="none" 
+              stroke="url(#line-gradient)" 
+              strokeWidth="4" 
+              style={{ pathLength: stickyScroll }}
+            />
+          </svg>
+
+          <div className="sticky-text-column" style={{ zIndex: 1 }}>
             <motion.div className="scroll-text-block" style={{ opacity: text1Opacity, y: text1Y }}>
               <h3>Stay in the loop.</h3>
               <p>Keep a close eye on your Mac's internals without launching heavy system reports. Everything you need is one click away.</p>
