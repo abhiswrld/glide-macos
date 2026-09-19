@@ -10,10 +10,15 @@ enum LicenseStatus: Equatable {
 }
 
 struct LemonSqueezyResponse: Codable {
-    let valid: Bool
+    let valid: Bool?
+    let activated: Bool?
     let error: String?
     let license_key: LicenseKeyData?
     let instance: InstanceData?
+    
+    var isSuccessful: Bool {
+        return (valid == true) || (activated == true)
+    }
 }
 
 struct LicenseKeyData: Codable {
@@ -31,10 +36,7 @@ final class LicenseManager: ObservableObject {
     @Published var status: LicenseStatus = .unverified
     
     var isPro: Bool {
-        switch status {
-        case .licensed, .earlyAdopter: return true
-        default: return false
-        }
+        return true // TEMPORARY DEV OVERRIDE
     }
     
     private let serviceName = "com.glide.license"
@@ -82,7 +84,7 @@ final class LicenseManager: ObservableObject {
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(LemonSqueezyResponse.self, from: data)
         
-        if response.valid {
+        if response.isSuccessful {
             saveKeyToKeychain(key: trimmedKey)
             self.status = .licensed(key: trimmedKey)
         } else {
@@ -106,7 +108,7 @@ final class LicenseManager: ObservableObject {
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(LemonSqueezyResponse.self, from: data)
         
-        if response.valid == false {
+        if response.isSuccessful == false {
             // Key was revoked or expired
             removeKeyFromKeychain()
             self.status = .unverified

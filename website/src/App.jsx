@@ -305,7 +305,7 @@ function App() {
               <li className="pricing-feature"><span className="feature-check">✓</span> Force Discharge</li>
               <li className="pricing-feature"><span className="feature-check">✓</span> Custom menu bar icons</li>
             </ul>
-            <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874" target="_blank" rel="noreferrer" className="pricing-btn pro">
+            <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874?checkout[discount_code]=EARLYBIRD" target="_blank" rel="noreferrer" className="pricing-btn pro">
               Get Glide Pro
             </a>
             {remainingFree > 0 && (
