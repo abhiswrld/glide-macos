@@ -36,11 +36,16 @@ export default async function handler(req, res) {
     );
 
     if (earlybirdDiscount) {
-      const usageCount = earlybirdDiscount.attributes.usage_count || 0;
-      const maxRedemptions = earlybirdDiscount.attributes.max_redemptions || 250;
+      const attributes = earlybirdDiscount.attributes || {};
+      const usageCount = attributes.usage_count || attributes.redemptions || attributes.times_used || 0;
+      const maxRedemptions = attributes.max_redemptions || 250;
       const remaining = Math.max(0, maxRedemptions - usageCount);
       
-      return res.status(200).json({ count: usageCount, remaining });
+      return res.status(200).json({ 
+        count: usageCount, 
+        remaining: remaining,
+        debug_attributes: attributes 
+      });
     }
 
     // If we couldn't find the code, just return 250 remaining
