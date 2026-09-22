@@ -268,7 +268,7 @@ function App() {
       <section id="pricing" className="pricing-section">
         <div className="pricing-header">
           <h2 className="pricing-title">Plans &amp; Pricing</h2>
-          <p className="pricing-subtitle">Whether your needs are basic or advanced, we've got you covered.</p>
+          <p className="pricing-subtitle">Whether your needs are basic or advanced, Glide's got you covered.</p>
         </div>
 
         <div className="pricing-grid">
@@ -305,7 +305,7 @@ function App() {
               <li className="pricing-feature"><span className="feature-check">✓</span> Force Discharge</li>
               <li className="pricing-feature"><span className="feature-check">✓</span> Custom menu bar icons</li>
             </ul>
-            <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/b0ac64d4-dda9-465a-8a94-e968720ad874?checkout[discount_code]=EARLYBIRD" target="_blank" rel="noreferrer" className="pricing-btn pro">
+            <a href="https://glide-macos.lemonsqueezy.com/checkout/buy/9b948b21-96f0-4588-b654-a7ebcc904d9b?checkout[discount_code]=EARLYBIRD" target="_blank" rel="noreferrer" className="pricing-btn pro">
               Get Glide Pro
             </a>
             {remainingFree > 0 && (
