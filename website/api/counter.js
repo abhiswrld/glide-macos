@@ -40,9 +40,30 @@ export default async function handler(req, res) {
     );
 
     if (earlybirdDiscount) {
+      const discountId = earlybirdDiscount.id;
       const attributes = earlybirdDiscount.attributes || {};
-      const usageCount = attributes.usage_count || attributes.redemptions || attributes.times_used || 0;
       const maxRedemptions = attributes.max_redemptions || 250;
+      
+      // Fetch the actual redemptions for this discount
+      let usageCount = 0;
+      try {
+        const redemptionsRes = await fetch(`https://api.lemonsqueezy.com/v1/discount-redemptions?filter[discount_id]=${discountId}`, {
+          headers: {
+            'Accept': 'application/vnd.api+json',
+            'Content-Type': 'application/vnd.api+json',
+            'Authorization': `Bearer ${apiKey}`
+          }
+        });
+        
+        if (redemptionsRes.ok) {
+          const redemptionsJson = await redemptionsRes.json();
+          // Use meta total if available, otherwise array length
+          usageCount = redemptionsJson.meta?.page?.total ?? redemptionsJson.data?.length ?? 0;
+        }
+      } catch (e) {
+        console.error("Error fetching redemptions:", e);
+      }
+
       const remaining = Math.max(0, maxRedemptions - usageCount);
       
       return res.status(200).json({ 
