@@ -74,19 +74,35 @@ final class LicenseManager: ObservableObject {
     /// Activate a new license key from the UI
     func activateLicense(key: String) async throws {
         let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        NSLog("[Glide] Activating license key: %@...", String(trimmedKey.prefix(8)))
         
         let url = URL(string: "https://api.lemonsqueezy.com/v1/licenses/activate")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 15
         
         let instanceName = Host.current().localizedName ?? "Mac"
         let bodyString = "license_key=\(trimmedKey)&instance_name=\(instanceName)"
         request.httpBody = bodyString.data(using: .utf8)
         
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(LemonSqueezyResponse.self, from: data)
+        let (data, httpResponse) = try await URLSession.shared.data(for: request)
+        
+        if let httpResp = httpResponse as? HTTPURLResponse {
+            NSLog("[Glide] Activation HTTP status: %d", httpResp.statusCode)
+        }
+        
+        let rawBody = String(data: data, encoding: .utf8) ?? "(non-UTF8)"
+        NSLog("[Glide] Activation response body: %@", rawBody)
+        
+        let response: LemonSqueezyResponse
+        do {
+            response = try JSONDecoder().decode(LemonSqueezyResponse.self, from: data)
+        } catch {
+            NSLog("[Glide] Failed to decode response: %@", error.localizedDescription)
+            throw NSError(domain: "LicenseManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Unexpected response from server. Please try again."])
+        }
         
         if response.isSuccessful {
             saveKeyToKeychain(key: trimmedKey)
@@ -94,8 +110,10 @@ final class LicenseManager: ObservableObject {
                 saveInstanceToKeychain(instanceId: instanceId)
             }
             self.status = .licensed(key: trimmedKey)
+            NSLog("[Glide] License activated successfully")
         } else {
             let errorMsg = response.error ?? "Invalid license key."
+            NSLog("[Glide] Activation failed: %@", errorMsg)
             self.status = .error(errorMsg)
             throw NSError(domain: "LicenseManager", code: 1, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }

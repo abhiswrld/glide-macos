@@ -106,7 +106,9 @@ struct LicenseActivationView: View {
         Task {
             do {
                 try await licenseManager.activateLicense(key: licenseKey)
-                // Dismiss happens via onChange hook on success
+                // Success — dismiss directly
+                isActivating = false
+                onDismiss()
             } catch {
                 errorMessage = error.localizedDescription
                 isActivating = false

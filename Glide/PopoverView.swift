@@ -678,13 +678,16 @@ struct PopoverView: View {
                         }
                     } else {
                         HStack {
-                            Spacer().frame(width: 40)
                             Text("Learning your schedule...")
-                                .font(.caption.italic())
-                                .foregroundStyle(.secondary)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(GlideTheme.purple.opacity(0.9))
+                                .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(GlideTheme.purple.opacity(0.15))
+                                .clipShape(Capsule())
                         }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 4)
                     }
                 }
                 

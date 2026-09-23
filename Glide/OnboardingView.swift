@@ -389,7 +389,11 @@ struct OnboardingView: View {
         Task {
             do {
                 try await licenseManager.activateLicense(key: licenseKey)
-                // onChange hook handles completion
+                // Success — move to thank you step directly
+                isActivating = false
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    step = 3
+                }
             } catch {
                 activationError = error.localizedDescription
                 isActivating = false
