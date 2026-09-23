@@ -613,6 +613,10 @@ struct PopoverView: View {
                         let isCharging = model.snapshot?.isCharging == true
                         
                         VStack(spacing: 4) {
+                            Text("Next scheduled charge:")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
                             Text(nextChargeString(for: predictedTime, level: targetLimit))
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -628,7 +632,7 @@ struct PopoverView: View {
                                 if percent == 99 || minutes > 0 {
                                     Text("Approx \(timeStr) to reach target")
                                         .font(.footnote.weight(.medium))
-                                        .foregroundStyle(GlideTheme.purple)
+                                        .foregroundStyle(.secondary)
                                 }
                             } else if percent >= targetLimit {
                                 HStack(spacing: 4) {
@@ -871,7 +875,7 @@ struct PopoverView: View {
         formatter.dateStyle = .none
         formatter.timeStyle = .short
         let dateStr = Calendar.current.isDateInToday(date) ? "Today at \(formatter.string(from: date))" : "Tomorrow at \(formatter.string(from: date))"
-        return "Next scheduled charge: \(dateStr) to \(level)%"
+        return "\(dateStr) to \(level)%"
     }
 }
 
