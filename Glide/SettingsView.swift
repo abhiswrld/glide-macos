@@ -275,27 +275,31 @@ struct SettingsView: View {
                     }
                 }
                 .padding(.vertical, 6)
-                settingsDivider
                 
-                HStack(spacing: 12) {
-                    settingsIcon("arrow.triangle.2.circlepath", color: GlideTheme.blue)
-                    Text("Check for Updates")
-                        .font(.body)
-                    Spacer()
-                    Button("Check Now") {
-                        SparkleManager.shared.checkForUpdates()
-                    }
-                    .font(.caption.weight(.bold))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(GlideTheme.blue.opacity(0.15))
-                    .foregroundStyle(GlideTheme.blue)
-                    .clipShape(Capsule())
-                    .buttonStyle(.plain)
-                }
-                .padding(.vertical, 6)
             }
             .glassCard()
+            
+            Button(action: {
+                SparkleManager.shared.checkForUpdates()
+            }) {
+                Text("Check for Updates")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(GlideTheme.blue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(GlideTheme.blue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.black.opacity(0.4))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
+            )
         }
     }
     
@@ -305,7 +309,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Developer & Danger Zone")
 
-            VStack(spacing: 4) {
+            VStack(spacing: 0) {
                 Button(action: {
                     uninstallGlide()
                 }) {
@@ -316,11 +320,19 @@ struct SettingsView: View {
                             .foregroundStyle(GlideTheme.signalRed)
                         Spacer()
                     }
-                    .padding(.vertical, 6)
                 }
                 .buttonStyle(.plain)
             }
-            .glassCard()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10) // Reduced padding for this specific card
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(GlideTheme.cardStroke, lineWidth: 0.5)
+            )
         }
     }
     
