@@ -10,7 +10,7 @@ import SwiftUI
 import GlideCore
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
     private let model = BatteryModel()
@@ -86,9 +86,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         NSLog("[Glide] Daemon installed at \\(daemonPath): \\(isInstalled)")
         
         if isInstalled {
-            // It's installed on disk, but is it running? We'll assume yes for now, 
-            // and the UI will show disconnected if XPC pings fail.
-            // (Assuming showMainUI is not a method, we just do nothing here)
+            // It's installed on disk, connect to it
+            daemon.connect()
         } else {
             NSLog("[Glide] Daemon not found, showing onboarding")
             self.showOnboardingWindow()
@@ -212,6 +211,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         window.contentView = NSHostingView(rootView: view)
         window.isReleasedWhenClosed = false
         window.level = .floating  // Ensure it appears above everything
+        window.delegate = self
         
         self.onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
@@ -220,6 +220,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Drop back to normal level after it's visible so it behaves like a regular window
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             window.level = .normal
+        }
+    }
+    
+    func windowWillClose(_ notification: Notification) {
+        if let window = notification.object as? NSWindow, window == onboardingWindow {
+            NSLog("[Glide] Onboarding window closing, connecting to daemon...")
+            self.daemon.connect()
+            self.onboardingWindow = nil
         }
     }
 

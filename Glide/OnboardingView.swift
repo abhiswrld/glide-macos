@@ -370,12 +370,13 @@ struct OnboardingView: View {
                     .padding(.horizontal, 32)
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity)
+                    .background(GlideTheme.signalGreen)
+                    .foregroundStyle(.black)
+                    .cornerRadius(100)
+                    .contentShape(Rectangle())
+                    .shadow(color: GlideTheme.signalGreen.opacity(0.4), radius: 8, y: 4)
             }
             .buttonStyle(.plain)
-            .background(GlideTheme.signalGreen)
-            .foregroundStyle(.black)
-            .cornerRadius(100)
-            .shadow(color: GlideTheme.signalGreen.opacity(0.4), radius: 8, y: 4)
             .padding(.horizontal, 40)
             .padding(.bottom, 20)
         }
