@@ -22,23 +22,26 @@ fi
 
 echo "📦 Found app at $APP_BUNDLE"
 
-# IMPORTANT: Fix the daemon's code signature identifier AND sign with a valid Apple Developer identity.
-# SMAppService requires the app and the daemon to have the exact same Developer Team ID.
-# Ad-hoc signing (-) lacks a Team ID and macOS will silently refuse to start the daemon.
 SIGN_IDENTITY="EA7232703AB7C8D9D5AB19476F4C96C3A56212BD"
-
-DAEMON_PATH="$APP_BUNDLE/Contents/MacOS/glide-daemon"
-if [ -f "$DAEMON_PATH" ]; then
-    echo "🔑 Re-signing daemon with correct identifier and Team ID..."
-    codesign --force --sign "$SIGN_IDENTITY" --identifier "com.abhinav.glide-daemon" --options runtime "$DAEMON_PATH"
-fi
 
 # Ensure AppIcon is injected before signing
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 cp AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 
-echo "🔑 Re-signing main app bundle with Team ID..."
-codesign --force --sign "$SIGN_IDENTITY" --options runtime --deep "$APP_BUNDLE"
+# IMPORTANT: Code signing must go inside-out.
+# 1. Sign the daemon FIRST with its correct Mach service identifier.
+# 2. Sign the main app bundle LAST (without --deep!) so it creates
+#    a seal over the already-signed daemon. Using --deep would re-sign
+#    the daemon with the wrong default identifier AND then the outer
+#    seal would mismatch if we re-signed the daemon again after.
+DAEMON_PATH="$APP_BUNDLE/Contents/MacOS/glide-daemon"
+if [ -f "$DAEMON_PATH" ]; then
+    echo "🔑 Signing daemon with correct identifier and Team ID..."
+    codesign --force --sign "$SIGN_IDENTITY" --identifier "com.abhinav.glide-daemon" --options runtime "$DAEMON_PATH"
+fi
+
+echo "🔑 Signing main app bundle with Team ID..."
+codesign --force --sign "$SIGN_IDENTITY" --options runtime "$APP_BUNDLE"
 
 DMG_NAME="${APP_NAME}.dmg"
 echo "📀 Creating DMG..."

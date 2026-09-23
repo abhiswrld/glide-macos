@@ -14,6 +14,7 @@ final class DaemonModel: ObservableObject {
 
     @Published var limit: Int?
     @Published var lastError: String?
+    @Published var isConnected: Bool = false
 
     private var conn: NSXPCConnection?
 
@@ -38,6 +39,7 @@ final class DaemonModel: ObservableObject {
     private func connectionDied() {
         conn = nil
         limit = nil
+        isConnected = false
     }
 
     private var proxy: GlideDaemonProtocol {
@@ -54,7 +56,9 @@ final class DaemonModel: ObservableObject {
         let p = proxy
         let onReply: (Int) -> Void = { limit in
             Task { @MainActor in
-                DaemonModel.shared?.limit = limit >= 0 ? limit : nil
+                guard let m = DaemonModel.shared else { return }
+                m.isConnected = true
+                m.limit = limit >= 0 ? limit : nil
             }
         }
         p.getLimit(withReply: onReply)

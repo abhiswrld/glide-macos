@@ -3,12 +3,12 @@
     <channel>
         <title>Glide</title>
         <item>
-            <title>2.0.6</title>
-            <pubDate>Wed, 23 Sep 2026 16:04:05 -0700</pubDate>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>2.0.6</sparkle:shortVersionString>
+            <title>2.0.7</title>
+            <pubDate>Wed, 23 Sep 2026 16:34:37 -0700</pubDate>
+            <sparkle:version>7</sparkle:version>
+            <sparkle:shortVersionString>2.0.7</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/abhiswrld/glide-macos/releases/download/v2.0.6/Glide.dmg" length="3234812" type="application/octet-stream" sparkle:edSignature="oZHn4WvKU2hGOSWl/K1uJ43Y8CiH3v7tt+ZnXyb6wmWsBFexfwdK+0KYTDRTX+tTXy99fbPNHPTFayeHJSNGDg=="/>
+            <enclosure url="https://github.com/abhiswrld/glide-macos/releases/download/v2.0.7/Glide.dmg" length="3203746" type="application/octet-stream" sparkle:edSignature="CryOtewqrc1JbbmPNcv5nUfAv3xS/DEv7K6nm2v0YktWnEXOOo6tCmzqURak7PtxI96ECRtkzqoDs4tM9HQGAw=="/>
         </item>
     </channel>
 </rss>

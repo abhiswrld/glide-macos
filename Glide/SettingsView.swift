@@ -347,7 +347,7 @@ struct SettingsView: View {
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
             let script = """
-            do shell script "/bin/sh -c 'launchctl bootout system /Library/LaunchDaemons/com.abhinav.glide-daemon.plist || true; rm -f /Library/LaunchDaemons/com.abhinav.glide-daemon.plist; rm -f /Library/PrivilegedHelperTools/glide-daemon; rm -rf ~/Library/Preferences/com.abhinav.Glide.plist; rm -rf \\"~/Library/Application Support/Glide\\";'" with administrator privileges
+            do shell script "/bin/sh -c '(launchctl bootout system/com.abhinav.glide-daemon 2>/dev/null || launchctl unload -w /Library/LaunchDaemons/com.abhinav.glide-daemon.plist 2>/dev/null || true); rm -f /Library/LaunchDaemons/com.abhinav.glide-daemon.plist; rm -f /Library/PrivilegedHelperTools/glide-daemon; rm -rf ~/Library/Preferences/com.abhinav.Glide.plist; rm -rf ~/Library/Preferences/com.abhiswrld.Glide.plist;'" with administrator privileges
             """
             
             DispatchQueue.global(qos: .userInitiated).async {

@@ -104,7 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         
         // Remove the daemon using osascript
         let script = """
-        do shell script "launchctl unload -w /Library/LaunchDaemons/com.abhinav.glide-daemon.plist && rm -f /Library/LaunchDaemons/com.abhinav.glide-daemon.plist && rm -f /Library/PrivilegedHelperTools/glide-daemon" with administrator privileges
+        do shell script "(launchctl bootout system/com.abhinav.glide-daemon 2>/dev/null || launchctl unload -w /Library/LaunchDaemons/com.abhinav.glide-daemon.plist 2>/dev/null || true) && rm -f /Library/LaunchDaemons/com.abhinav.glide-daemon.plist && rm -f /Library/PrivilegedHelperTools/glide-daemon" with administrator privileges
         """
         
         var error: NSDictionary?

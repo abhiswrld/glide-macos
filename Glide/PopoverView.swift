@@ -432,7 +432,7 @@ struct PopoverView: View {
                 }
             }
 
-            if daemon.limit == nil {
+            if !daemon.isConnected {
                 HStack {
                     Spacer()
                     Button {
