@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   // If the API key isn't set yet (e.g. local dev before you add it to Vercel),
   // we just return a default value so the website doesn't crash.
   if (!apiKey) {
-    return res.status(200).json({ count: 0, remaining: 250, error: "Missing LEMON_SQUEEZY_API_KEY" });
+    return res.status(200).json({ count: 0, remaining: 250 });
   }
 
   try {
@@ -66,19 +66,15 @@ export default async function handler(req, res) {
 
       const remaining = Math.max(0, maxRedemptions - usageCount);
       
-      return res.status(200).json({ 
-        count: usageCount, 
-        remaining: remaining,
-        debug_attributes: attributes 
-      });
+      return res.status(200).json({ count: usageCount, remaining: remaining });
     }
 
     // If we couldn't find the code, just return 250 remaining
-    return res.status(200).json({ count: 0, remaining: 250, debug: "Code EARLYBIRD not found in API response" });
+    return res.status(200).json({ count: 0, remaining: 250 });
 
   } catch (error) {
     console.error("Error fetching LemonSqueezy discounts:", error);
     // On error, fail gracefully but include the error message
-    return res.status(200).json({ count: 0, remaining: 250, error: error.message });
+    return res.status(200).json({ count: 0, remaining: 250 });
   }
 }

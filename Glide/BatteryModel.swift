@@ -9,6 +9,8 @@ struct BatteryHistoryEntry: Codable, Identifiable {
     let date: Date
     let healthPercent: Int
     let cycleCount: Int
+    let maxCapacity: Int?
+    let designCapacity: Int?
 }
 
 
@@ -61,6 +63,7 @@ final class BatteryModel: ObservableObject {
     func start() {
         history = Self.loadHistory()
         shortTermHistory = Self.loadShortTermHistory()
+        checkAutoCalibration()
         refresh()
         startPolling()
     }
@@ -83,7 +86,7 @@ final class BatteryModel: ObservableObject {
         let s = BatteryReader.read()
         if s.isPluggedIn != lastPluggedIn {
             if let last = lastPluggedIn, last == true && s.isPluggedIn == false {
-                SmartChargingModel.shared.recordUnplug()
+                SmartChargingModel.shared.recordUnplug(chargeLevel: s.percent)
             }
             lastPluggedIn = s.isPluggedIn
             powerChangedAt = Date()
@@ -167,23 +170,20 @@ final class BatteryModel: ObservableObject {
         let smartModel = SmartChargingModel.shared
         
         if !isEnabled {
-            if isSmartPausing {
-                defaults.set(false, forKey: "isSmartPausing")
-            }
+            if isSmartPausing { defaults.set(false, forKey: "isSmartPausing") }
+            if defaults.bool(forKey: "isSmartPrecharging") { defaults.set(false, forKey: "isSmartPrecharging") }
             return false
         }
         
         guard s.isPluggedIn else {
-            if isSmartPausing {
-                defaults.set(false, forKey: "isSmartPausing")
-            }
+            if isSmartPausing { defaults.set(false, forKey: "isSmartPausing") }
+            if defaults.bool(forKey: "isSmartPrecharging") { defaults.set(false, forKey: "isSmartPrecharging") }
             return false
         }
         
         guard let targetDate = smartModel.predictedUnplugTime else {
-            if isSmartPausing {
-                defaults.set(false, forKey: "isSmartPausing")
-            }
+            if isSmartPausing { defaults.set(false, forKey: "isSmartPausing") }
+            if defaults.bool(forKey: "isSmartPrecharging") { defaults.set(false, forKey: "isSmartPrecharging") }
             return false
         }
         
@@ -191,8 +191,8 @@ final class BatteryModel: ObservableObject {
         let primaryLimitRaw = defaults.integer(forKey: "primaryChargeLimit")
         let primaryLimit = primaryLimitRaw == 0 ? 80 : primaryLimitRaw
         
-        // If > 1.5 hours away
         if timeRemaining > 5400 {
+            if defaults.bool(forKey: "isSmartPrecharging") { defaults.set(false, forKey: "isSmartPrecharging") }
             if s.percent >= primaryLimit {
                 // We reached the user's base limit, pause there
                 if !isSmartPausing {
@@ -210,18 +210,47 @@ final class BatteryModel: ObservableObject {
                 return false // Let sailing or standard charging handle getting to primaryLimit
             }
         } else if timeRemaining > 0 {
-            // Less than 1.5 hours away, charge to 100%
+            let targetCharge = smartModel.predictedChargeLevel ?? 100
+            
+            // If the user's base limit is already higher or equal to the target, do nothing.
+            if primaryLimit >= targetCharge {
+                if defaults.bool(forKey: "isSmartPrecharging") { defaults.set(false, forKey: "isSmartPrecharging") }
+                return false
+            }
+            
+            if !s.isPluggedIn {
+                let now = Date().timeIntervalSince1970
+                let lastNotif = defaults.double(forKey: "lastSmartChargeNotification")
+                if now - lastNotif > 43200 { // 12 hours
+                    defaults.set(now, forKey: "lastSmartChargeNotification")
+                    Task { @MainActor in
+                        NotificationManager.shared.sendNotification(
+                            title: "Plug in your Mac",
+                            body: "Smart Charging is scheduled to begin now to reach \(targetCharge)%.",
+                            identifier: "smartCharge_\(Int(now))"
+                        )
+                    }
+                }
+            }
+            
+            // Less than 1.5 hours away, charge to target
             if isSmartPausing {
                 defaults.set(false, forKey: "isSmartPausing")
             }
-            if let currentLimit = DaemonModel.shared?.limit, currentLimit != 100 {
-                DaemonModel.shared?.setLimit(100)
+            if !defaults.bool(forKey: "isSmartPrecharging") {
+                defaults.set(true, forKey: "isSmartPrecharging")
+            }
+            if let currentLimit = DaemonModel.shared?.limit, currentLimit != targetCharge {
+                DaemonModel.shared?.setLimit(targetCharge)
             }
             return true
         } else {
             // Target passed
             if isSmartPausing {
                 defaults.set(false, forKey: "isSmartPausing")
+            }
+            if defaults.bool(forKey: "isSmartPrecharging") {
+                defaults.set(false, forKey: "isSmartPrecharging")
             }
             return false
         }
@@ -428,10 +457,19 @@ final class BatteryModel: ObservableObject {
             return
         }
 
+        recordLongTermHistory(health: health, cycles: s.cycleCount, snapshot: s)
+    }
+
+    private func recordLongTermHistory(health: Int, cycles: Int, snapshot: BatterySnapshot) {
+        let maxCapacity = snapshot.raw["AppleRawMaxCapacity"] ?? snapshot.raw["BatteryData.FullChargeCapacity"]
+        let designCapacity = snapshot.raw["DesignCapacity"] ?? snapshot.raw["BatteryData.DesignCapacity"]
+        
         let entry = BatteryHistoryEntry(
-            date: today,
+            date: Date(),
             healthPercent: health,
-            cycleCount: s.cycleCount
+            cycleCount: cycles,
+            maxCapacity: maxCapacity,
+            designCapacity: designCapacity
         )
         history.append(entry)
         Self.saveHistory(history)
@@ -469,5 +507,35 @@ final class BatteryModel: ObservableObject {
         encoder.dateEncodingStrategy = .iso8601
         guard let data = try? encoder.encode(entries) else { return }
         try? data.write(to: historyURL, options: .atomic)
+    }
+
+    private func checkAutoCalibration() {
+        let defaults = UserDefaults.standard
+        let lastCal = defaults.double(forKey: "lastCalibrationDate")
+        let lastNotif = defaults.double(forKey: "lastCalibrationNotification")
+        
+        let now = Date().timeIntervalSince1970
+        
+        if lastCal == 0 {
+            defaults.set(now, forKey: "lastCalibrationDate")
+            return
+        }
+        
+        // 30 days = 2592000 seconds
+        let threshold: TimeInterval = 2592000
+        
+        if now - lastCal > threshold {
+            if now - lastNotif > 86400 {
+                defaults.set(now, forKey: "lastCalibrationNotification")
+                DispatchQueue.main.async {
+                    NotificationManager.shared.sendNotification(
+                        title: "Battery Calibration Recommended",
+                        body: "It has been over a month since your last calibration. Calibrating your battery helps maintain accurate capacity readings.",
+                        identifier: "cal_invite_\(Int(now))",
+                        categoryIdentifier: "CALIBRATION_INVITE"
+                    )
+                }
+            }
+        }
     }
 }

@@ -74,6 +74,7 @@ struct HistoryView: View {
                 }
 
                 healthChart
+                rawCapacitySection
                 cycleChart
             }
             .padding(.horizontal, 16)
@@ -237,7 +238,7 @@ struct HistoryView: View {
                     AxisMarks(position: .trailing, values: [75, 85, 95]) { value in
                         AxisValueLabel {
                             Text("\(value.as(Int.self) ?? 0)%")
-                                .font(.system(size: 9))
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         AxisGridLine()
@@ -246,9 +247,9 @@ struct HistoryView: View {
                 }
                 .chartXAxis {
                     AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                        AxisValueLabel(format: .dateTime.month(.abbreviated))
+                        AxisValueLabel(format: .dateTime.month(.abbreviated).day())
                             .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white)
                         AxisGridLine()
                             .foregroundStyle(Color.white.opacity(0.06))
                     }
@@ -257,6 +258,51 @@ struct HistoryView: View {
             }
         }
         .glassCard()
+    }
+
+    private var rawCapacitySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Spacer()
+                
+                VStack(spacing: 4) {
+                    Text("Current Max")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.tertiary)
+                    if let maxCap = model.snapshot?.raw["AppleRawMaxCapacity"] as? Int ?? model.snapshot?.raw["BatteryData.FullChargeCapacity"] as? Int {
+                        Text("\(maxCap) mAh")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(GlideTheme.pink)
+                    } else {
+                        Text("--")
+                            .font(.title3.weight(.bold))
+                    }
+                }
+                
+                Spacer()
+                Spacer()
+                
+                VStack(spacing: 4) {
+                    Text("Design Capacity")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.tertiary)
+                    if let design = model.snapshot?.raw["DesignCapacity"] as? Int ?? model.snapshot?.raw["BatteryData.DesignCapacity"] as? Int {
+                        Text("\(design) mAh")
+                            .font(.title2.weight(.bold))
+                    } else {
+                        Text("--")
+                            .font(.title3.weight(.bold))
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .padding(14)
+        .background(Color.white.opacity(0.02))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.05), lineWidth: 1))
     }
 
     // MARK: - Cycle Chart
@@ -316,7 +362,7 @@ struct HistoryView: View {
                     AxisMarks(position: .trailing, values: .automatic(desiredCount: 4)) { value in
                         AxisValueLabel {
                             Text("\(value.as(Int.self) ?? 0)")
-                                .font(.system(size: 9))
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         AxisGridLine()
@@ -325,9 +371,9 @@ struct HistoryView: View {
                 }
                 .chartXAxis {
                     AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                        AxisValueLabel(format: .dateTime.month(.abbreviated))
+                        AxisValueLabel(format: .dateTime.month(.abbreviated).day())
                             .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white)
                         AxisGridLine()
                             .foregroundStyle(Color.white.opacity(0.06))
                     }
@@ -406,7 +452,8 @@ struct IsolatedShortTermChart: View, Equatable {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .stride(by: .hour)) { value in
+            let strideCount = rangeHours >= 12 ? 2 : 1
+            AxisMarks(values: .stride(by: .hour, count: strideCount)) { value in
                 AxisValueLabel() {
                     if let date = value.as(Date.self) {
                         Text(date, format: .dateTime.hour())

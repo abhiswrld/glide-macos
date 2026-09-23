@@ -9,7 +9,9 @@
         <key>com.abhinav.glide-daemon</key>
         <true/>
     </dict>
-    <key>BundleProgram</key>
-    <string>/Library/PrivilegedHelperTools/glide-daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/PrivilegedHelperTools/glide-daemon</string>
+    </array>
 </dict>
 </plist>

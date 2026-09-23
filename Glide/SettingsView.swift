@@ -14,21 +14,41 @@ struct SettingsView: View {
     
     @StateObject private var licenseManager = LicenseManager.shared
     @State private var showActivationSheet = false
+    @State private var isProBadgeHovered = false
+    
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 20) {
                 menuBarSection
                 preferencesSection
                 aboutSection
+                dangerZoneSection
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .sheet(isPresented: $showActivationSheet) {
-            LicenseActivationView()
+        .overlay {
+            if showActivationSheet {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation { showActivationSheet = false }
+                    }
+                
+                LicenseActivationView(onDismiss: {
+                    withAnimation { showActivationSheet = false }
+                })
+                    .background(Color(NSColor.windowBackgroundColor))
+                    .cornerRadius(12)
+                    .shadow(radius: 20)
+                    .padding(20)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showActivationSheet)
     }
 
 
@@ -36,10 +56,10 @@ struct SettingsView: View {
     // MARK: - Menu Bar
 
     private var menuBarSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Menu Bar")
 
-            VStack(spacing: 0) {
+            VStack(spacing: 4) {
                 // Icon style
                 HStack(spacing: 12) {
                     settingsIcon("menubar.rectangle", color: GlideTheme.teal)
@@ -105,10 +125,10 @@ struct SettingsView: View {
     // MARK: - Preferences
 
     private var preferencesSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Preferences")
 
-            VStack(spacing: 0) {
+            VStack(spacing: 4) {
                 // Temperature unit
                 HStack(spacing: 12) {
                     settingsIcon("ruler", color: GlideTheme.blue)
@@ -174,18 +194,19 @@ struct SettingsView: View {
     // MARK: - About
     
     private var aboutSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionHeader("About Glide")
 
-            VStack(spacing: 0) {
+            VStack(spacing: 4) {
                 HStack(spacing: 12) {
                     settingsIcon("info.circle", color: GlideTheme.blue)
                     Text("Version")
-                        .font(.subheadline)
+                        .font(.body)
                     Spacer()
                     Text(GlideCore.version)
-                        .font(.caption.weight(.medium))
+                        .font(.body.weight(.medium))
                         .foregroundStyle(.secondary)
+                        .padding(.trailing, 14)
                 }
                 .padding(.vertical, 6)
 
@@ -194,7 +215,9 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     settingsIcon("star.fill", color: licenseColor)
                     Text("License Status")
-                        .font(.subheadline)
+                        .font(.body)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     Spacer()
                     
                     if case .unverified = licenseManager.status {
@@ -203,36 +226,46 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(GlideTheme.pink)
-                        .controlSize(.small)
+                        // .controlSize(.small) removed
                     } else if case .error = licenseManager.status {
                         Button("Activate Pro") {
                             showActivationSheet = true
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(GlideTheme.pink)
-                        .controlSize(.small)
+                        // .controlSize(.small) removed
                     } else {
-                        Text(licenseText)
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(licenseColor)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(licenseColor.opacity(0.12))
-                            .clipShape(Capsule())
-                    }
-                }
-                .padding(.vertical, 6)
-
-                if case .licensed = licenseManager.status {
-                    HStack {
-                        Spacer()
-                        Button("Deactivate License") {
-                            licenseManager.deactivateLicense()
+                        Group {
+                            if isProBadgeHovered {
+                                Button("Deactivate") {
+                                    Task {
+                                        await licenseManager.deactivateLicense()
+                                    }
+                                }
+                                .font(.caption.weight(.bold))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 6)
+                                .background(Color.red.opacity(0.15))
+                                .foregroundStyle(.red)
+                                .clipShape(Capsule())
+                                .buttonStyle(.plain)
+                            } else {
+                                Text(licenseText)
+                                    .font(.subheadline.weight(.heavy))
+                                    .foregroundStyle(licenseColor)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(licenseColor.opacity(0.15))
+                                            .shadow(color: licenseColor.opacity(0.4), radius: 6, x: 0, y: 0)
+                                    )
+                            }
                         }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .buttonStyle(.plain)
                         .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isProBadgeHovered = hovering
+                            }
                             if hovering {
                                 NSCursor.pointingHand.push()
                             } else {
@@ -240,8 +273,8 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    .padding(.top, 4)
                 }
+                .padding(.vertical, 6)
                 
             }
             .glassCard()
@@ -262,10 +295,81 @@ struct SettingsView: View {
             .padding(.vertical, 12)
             .background(Color.black.opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
             )
+        }
+    }
+    
+    // MARK: - Danger Zone
+    
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader("Developer & Danger Zone")
+
+            VStack(spacing: 4) {
+                Button(action: {
+                    NotificationCenter.default.post(name: NSNotification.Name("TriggerOnboarding"), object: nil)
+                }) {
+                    HStack(spacing: 12) {
+                        settingsIcon("sparkles", color: GlideTheme.blue)
+                        Text("Restart Onboarding (Test)")
+                            .font(.body)
+                        Spacer()
+                    }
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+
+                settingsDivider
+
+                Button(action: {
+                    uninstallGlide()
+                }) {
+                    HStack(spacing: 12) {
+                        settingsIcon("trash.fill", color: GlideTheme.signalRed)
+                        Text("Complete Uninstall...")
+                            .font(.body)
+                            .foregroundStyle(GlideTheme.signalRed)
+                        Spacer()
+                    }
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+            }
+            .glassCard()
+        }
+    }
+    
+    private func uninstallGlide() {
+        let alert = NSAlert()
+        alert.messageText = "Uninstall Glide?"
+        alert.informativeText = "This will remove the background daemon, delete all preferences, and completely trash the Glide app. You will be prompted for your password. The app will close immediately after."
+        alert.addButton(withTitle: "Uninstall")
+        alert.addButton(withTitle: "Cancel")
+        alert.alertStyle = .critical
+        
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            let script = """
+            do shell script "/bin/sh -c 'launchctl bootout system /Library/LaunchDaemons/com.abhinav.glide-daemon.plist || true; rm -f /Library/LaunchDaemons/com.abhinav.glide-daemon.plist; rm -f /Library/PrivilegedHelperTools/glide-daemon; rm -rf ~/Library/Preferences/com.abhinav.Glide.plist; rm -rf \\"~/Library/Application Support/Glide\\";'" with administrator privileges
+            """
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                var error: NSDictionary?
+                if let appleScript = NSAppleScript(source: script) {
+                    appleScript.executeAndReturnError(&error)
+                    DispatchQueue.main.async {
+                        if error == nil {
+                            NSApp.terminate(nil)
+                        } else {
+                            print("Uninstall failed: \\(String(describing: error))")
+                        }
+                    }
+                }
+            }
         }
     }
     

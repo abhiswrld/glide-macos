@@ -26,8 +26,8 @@ enum GlideTheme {
 struct GlassCard: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(Color.white.opacity(0.06))
@@ -60,6 +60,7 @@ enum GlideTab: String, CaseIterable {
 struct PopoverView: View {
     @EnvironmentObject var model: BatteryModel
     @EnvironmentObject var daemon: DaemonModel
+    @Environment(\.openWindow) private var openWindow
     
     @ObservedObject private var license = LicenseManager.shared
     @ObservedObject private var smartCharging = SmartChargingModel.shared
@@ -78,19 +79,17 @@ struct PopoverView: View {
     @AppStorage("isSailing") private var isSailing: Bool = false
     @AppStorage("smartChargingEnabled") private var smartChargingEnabled: Bool = false
     @AppStorage("isSmartPausing") private var isSmartPausing: Bool = false
+    @AppStorage("isSmartPrecharging") private var isSmartPrecharging: Bool = false
     @AppStorage("heatProtectionEnabled") private var heatProtectionEnabled: Bool = false
     @AppStorage("heatProtectionThreshold") private var heatProtectionThreshold: Int = 35
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
+    @AppStorage("isCompactMode") private var isCompactMode: Bool = false
     @AppStorage("forceDischargeEnabled") private var forceDischargeEnabled: Bool = false
     @AppStorage("isForceDischarging") private var isForceDischarging: Bool = false
     @AppStorage("calibrationPhase") private var calibrationPhase: Int = 0
     @AppStorage("primaryChargeLimit") private var primaryChargeLimit: Int = 80
     var body: some View {
-        ZStack {
-            VisualEffectView(material: .popover, blendingMode: .behindWindow)
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 tabBar
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -105,10 +104,12 @@ struct PopoverView: View {
                     SettingsView()
                 }
             }
-        }
         .frame(width: 320, height: 520)
         .preferredColorScheme(.dark)
         .onAppear { daemon.connect() }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetToBatteryTab"))) { _ in
+            selectedTab = .battery
+        }
     }
 
     // MARK: - Tab Bar
@@ -150,9 +151,32 @@ struct PopoverView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     header(s)
                     limitSection(s)
-                    chargingFeaturesSection
-                    statsSection(s)
-                    footer
+                    
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) {
+                            isCompactMode.toggle()
+                        }
+                    } label: {
+                        HStack {
+                            Text(isCompactMode ? "Show Advanced Features" : "Hide Advanced Features")
+                                .font(.caption.weight(.medium))
+                            Image(systemName: "chevron.down")
+                                .font(.caption2.weight(.bold))
+                                .rotationEffect(.degrees(isCompactMode ? 0 : 180))
+                        }
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.03))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if !isCompactMode {
+                        chargingFeaturesSection
+                        statsSection(s)
+                        footer
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -161,7 +185,7 @@ struct PopoverView: View {
                 VStack {
                     Spacer()
                     ProgressView("Reading battery…")
-                        .controlSize(.small)
+                        // .controlSize(.small) removed
                         .foregroundStyle(.secondary)
                     Spacer()
                 }
@@ -217,6 +241,8 @@ struct PopoverView: View {
                 statePill("Calibrating", icon: "arrow.triangle.2.circlepath", color: GlideTheme.purple)
             } else if isForceDischarging {
                 statePill("Discharging", icon: "bolt.slash.fill", color: GlideTheme.signalRed)
+            } else if isSmartPrecharging {
+                statePill("Smart Charging", icon: "brain.head.profile", color: GlideTheme.purple)
             } else if isSmartPausing {
                 statePill("Smart Paused", icon: "brain.head.profile", color: GlideTheme.purple)
             } else if isSailing {
@@ -251,6 +277,8 @@ struct PopoverView: View {
         Label(text, systemImage: icon)
             .font(.subheadline.weight(.bold))
             .foregroundStyle(color)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
             .background(color.opacity(0.18))
@@ -269,7 +297,7 @@ struct PopoverView: View {
     }
 
     private func batteryBar(_ s: BatterySnapshot) -> some View {
-        let targetLimit = primaryChargeLimit
+        let targetLimit = isSmartPrecharging ? 100 : primaryChargeLimit
         let isEffectivelyCharging = s.isCharging || (s.isPluggedIn && s.percent < targetLimit)
         
         let limitGradient = LinearGradient(
@@ -305,7 +333,7 @@ struct PopoverView: View {
                             .frame(width: max(0, geo.size.width * CGFloat(s.percent) / 100), height: 12)
                     }
 
-                    let limit = primaryChargeLimit
+                    let limit = isSmartPrecharging ? 100 : primaryChargeLimit
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(Color.white)
                         .frame(width: 3, height: 18)
@@ -321,7 +349,7 @@ struct PopoverView: View {
                     Text(s.isPluggedIn ? "Power Adapter" : "Battery")
                 }
                 Spacer()
-                let limit = primaryChargeLimit
+                let limit = isSmartPrecharging ? (smartCharging.predictedChargeLevel ?? 100) : primaryChargeLimit
                 Text("Limit \(limit)%")
             }
             .font(.system(size: 14, weight: .medium))
@@ -334,19 +362,21 @@ struct PopoverView: View {
     private func limitSection(_ s: BatterySnapshot) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             let limit = primaryChargeLimit
+            let displayLimit = isSmartPrecharging ? (smartCharging.predictedChargeLevel ?? 100) : limit
+            
             HStack {
-                Label("Charge Limit", systemImage: "battery.100.bolt")
+                Label(isSmartPrecharging ? "Smart Limit" : "Charge Limit", systemImage: isSmartPrecharging ? "brain.head.profile" : "battery.100.bolt")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Text("\(limit)%")
+                Text("\(displayLimit)%")
                     .font(.title3.weight(.bold))
                     .monospacedDigit()
-                    .foregroundStyle(GlideTheme.signalGreen)
+                    .foregroundStyle(isSmartPrecharging ? GlideTheme.purple : GlideTheme.signalGreen)
             }
 
             ThickSlider(
                 value: Binding(
-                    get: { draggingLimit ?? Double(limit) },
+                    get: { isSmartPrecharging ? Double(displayLimit) : (draggingLimit ?? Double(limit)) },
                     set: { draggingLimit = $0 }
                 ),
                 range: 60...100,
@@ -363,6 +393,7 @@ struct PopoverView: View {
                     )
                 ),
                 onEditingChanged: { editing in
+                    if isSmartPrecharging { return }
                     if !editing, let v = draggingLimit {
                         draggingLimit = nil
                         let newLimit = Int(v)
@@ -371,26 +402,33 @@ struct PopoverView: View {
                     }
                 }
             )
+            .disabled(isSmartPrecharging)
+            .opacity(isSmartPrecharging ? 0.6 : 1.0)
 
             // Preset capsules
             HStack(spacing: 6) {
                 ForEach([60, 70, 80, 90, 100], id: \.self) { p in
-                    Button { primaryChargeLimit = p; daemon.setLimit(p) } label: {
+                    Button { 
+                        if !isSmartPrecharging {
+                            primaryChargeLimit = p; daemon.setLimit(p) 
+                        }
+                    } label: {
                         Text("\(p)%")
-                            .font(.caption2.weight(.bold))
+                            .font(.footnote.weight(.bold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 6)
                             .background(
                                 Capsule()
-                                    .fill(p == primaryChargeLimit ? Color.white.opacity(0.15) : Color.white.opacity(0.04))
+                                    .fill(p == displayLimit ? (isSmartPrecharging ? GlideTheme.purple.opacity(0.15) : Color.white.opacity(0.15)) : Color.white.opacity(0.04))
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(p == primaryChargeLimit ? Color.white.opacity(0.2) : Color.clear, lineWidth: 0.5)
+                                    .stroke(p == displayLimit ? (isSmartPrecharging ? GlideTheme.purple.opacity(0.2) : Color.white.opacity(0.2)) : Color.clear, lineWidth: 0.5)
                             )
-                            .foregroundStyle(p == primaryChargeLimit ? .primary : .secondary)
+                            .foregroundStyle(p == displayLimit ? (isSmartPrecharging ? GlideTheme.purple : .primary) : .secondary)
                     }
                     .buttonStyle(.plain)
+                    .disabled(isSmartPrecharging)
                 }
             }
 
@@ -416,7 +454,7 @@ struct PopoverView: View {
             }
 
             if let err = daemon.lastError {
-                Text(err).font(.caption2).foregroundStyle(GlideTheme.signalRed)
+                Text(err).font(.footnote).foregroundStyle(GlideTheme.signalRed)
             }
         }
         .glassCard()
@@ -542,42 +580,111 @@ struct PopoverView: View {
                     icon: "brain.head.profile",
                     iconColor: GlideTheme.purple,
                     label: "Smart Charging",
-                    subtitle: "Learn schedule to save battery",
+                    subtitle: "Automated schedule",
                     isOn: $smartChargingEnabled
                 )
                 
                 if smartChargingEnabled {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.06))
-                        .frame(height: 0.5)
-                        .padding(.leading, 40)
-                    
-                    HStack {
-                        Spacer().frame(width: 40)
+                    Button {
+                        NotificationCenter.default.post(name: NSNotification.Name("OpenDashboard"), object: nil)
+                        NSApp.activate(ignoringOtherApps: true)
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Configure")
+                                .font(.subheadline.weight(.medium))
+                            Spacer()
+                        }
+                        .foregroundStyle(GlideTheme.purple)
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.25))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 8)
+                    .padding(.top, 4)
+                    if let predictedTime = smartCharging.predictedUnplugTime {
+                        let percent = model.snapshot?.percent ?? 0
+                        let targetLimit = smartCharging.predictedChargeLevel ?? 100
+                        let isCharging = model.snapshot?.isCharging == true
                         
-                        VStack(alignment: .leading, spacing: 4) {
-                            if smartCharging.predictedUnplugTime != nil || smartCharging.userOverrideTime != nil {
-                                DatePicker(
-                                    "Finish charging by",
-                                    selection: Binding(
-                                        get: { smartCharging.predictedUnplugTime ?? Date() },
-                                        set: { smartCharging.overridePrediction(to: $0) }
-                                    ),
-                                    displayedComponents: .hourAndMinute
-                                )
-                                .font(.caption.weight(.medium))
+                        HStack(spacing: 6) {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .foregroundStyle(.tertiary)
+                                .font(.system(size: 13))
+                            Text(nextChargeString(for: predictedTime, level: targetLimit))
                                 .foregroundStyle(.secondary)
-                                .datePickerStyle(.compact)
-                                .tint(GlideTheme.purple)
-                            } else {
-                                Text("Learning your schedule...")
-                                    .font(.caption.italic())
-                                    .foregroundStyle(.secondary)
-                                    .padding(.vertical, 6)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer()
+                        }
+                        .font(.subheadline)
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.25))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                        )
+                        .padding(.top, 4)
+                        .padding(.bottom, 4)
+                        
+                        if isCharging && percent < targetLimit {
+                            let minutes = model.snapshot?.timeRemainingMinutes ?? 0
+                            let hrs = minutes / 60
+                            let mins = minutes % 60
+                            let timeStr = percent == 99 ? "2-3m" : (hrs > 0 ? "\(hrs)h \(mins)m" : "\(mins)m")
+                            
+                            if percent == 99 || minutes > 0 {
+                                HStack {
+                                    Spacer().frame(width: 40)
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "bolt.fill")
+                                            .font(.system(size: 9))
+                                        Text("Approx \(timeStr) to reach target")
+                                            .font(.footnote.weight(.medium))
+                                    }
+                                    .foregroundStyle(GlideTheme.purple)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(GlideTheme.purple.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.trailing, 12)
+                                }
+                            }
+                        } else if percent >= targetLimit {
+                            HStack {
+                                Spacer().frame(width: 40)
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 9))
+                                    Text("Target reached (0 mins)")
+                                        .font(.footnote.weight(.medium))
+                                }
+                                .foregroundStyle(GlideTheme.signalGreen)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(GlideTheme.signalGreen.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.trailing, 12)
                             }
                         }
-                        .padding(.vertical, 4)
-                        .padding(.trailing, 12)
+                    } else {
+                        HStack {
+                            Spacer().frame(width: 40)
+                            Text("Learning your schedule...")
+                                .font(.caption.italic())
+                                .foregroundStyle(.secondary)
+                                .padding(.vertical, 6)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
                 
@@ -767,6 +874,7 @@ struct PopoverView: View {
                     .font(.subheadline)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
+                
                 Text(subtitle)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -779,6 +887,14 @@ struct PopoverView: View {
                 .controlSize(.small)
         }
         .padding(.vertical, 6)
+    }
+
+    private func nextChargeString(for date: Date, level: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        let dateStr = Calendar.current.isDateInToday(date) ? "Today at \(formatter.string(from: date))" : "Tomorrow at \(formatter.string(from: date))"
+        return "Next scheduled charge: \(dateStr) to \(level)%"
     }
 }
 

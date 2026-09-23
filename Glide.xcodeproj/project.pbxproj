@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		0BE28A416E921C742138E49B /* ScheduleDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18185930E7BD5292F47C8D3E /* ScheduleDashboardView.swift */; };
 		171003C96C3EB417BA04AFE9 /* SparkleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0CDE6FBCF3C36E3A500776 /* SparkleManager.swift */; };
 		1CBB6923DF827EB549E6B844 /* GlideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 45641F6939027B2DEF38CA83 /* GlideCore */; };
 		1E561992B4AB42ED046EC2F0 /* SmartChargingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01F26B5E18DC5A02CD4F683 /* SmartChargingModel.swift */; };
@@ -65,6 +66,7 @@
 /* Begin PBXFileReference section */
 		075713886D20E8C69DE89739 /* LicenseManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LicenseManager.swift; sourceTree = "<group>"; };
 		07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "com.abhinav.glide-daemon.plist"; path = "glide-daemon/com.abhinav.glide-daemon.plist"; sourceTree = "<group>"; };
+		18185930E7BD5292F47C8D3E /* ScheduleDashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScheduleDashboardView.swift; path = Glide/ScheduleDashboardView.swift; sourceTree = "<group>"; };
 		2F0A62F7F260857BB7EBF954 /* LicenseActivationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LicenseActivationView.swift; sourceTree = "<group>"; };
 		320F1CE0E9A5998B92E8527A /* glide-daemon */ = {isa = PBXFileReference; includeInIndex = 0; path = "glide-daemon"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE5532981419B04F2ECD2C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				FC0B4AEF3CAB0ACBFBD8B625 /* Packages */,
 				F0257EE2523A968F22A93828 /* Products */,
 				07F187A4B7BFCE74763A7BA7 /* com.abhinav.glide-daemon.plist */,
+				18185930E7BD5292F47C8D3E /* ScheduleDashboardView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -291,6 +294,7 @@
 				171003C96C3EB417BA04AFE9 /* SparkleManager.swift in Sources */,
 				BFBAE38A9082B022C223DE55 /* LicenseActivationView.swift in Sources */,
 				1E561992B4AB42ED046EC2F0 /* SmartChargingModel.swift in Sources */,
+				0BE28A416E921C742138E49B /* ScheduleDashboardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

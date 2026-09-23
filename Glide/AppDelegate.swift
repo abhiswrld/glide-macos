@@ -17,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let daemon = DaemonModel()
     
     private var onboardingWindow: NSWindow?
+    private var dashboardWindow: NSWindow?
+    private var eventMonitor: Any?
 
     // Read user preferences
     @AppStorage("menuBarIcon") private var menuBarIcon: String = "standard"
@@ -25,13 +27,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "C"
     @AppStorage("hideDockIcon") private var hideDockIcon: Bool = false
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return false
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleTriggerOnboarding), name: NSNotification.Name("TriggerOnboarding"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(showDashboardWindow), name: NSNotification.Name("OpenDashboard"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(showPopover), name: NSNotification.Name("OpenPopover"), object: nil)
+        
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.target = self
         item.button?.action = #selector(togglePopover)
         statusItem = item
         DaemonModel.shared = daemon
 
+        NSApp.appearance = NSAppearance(named: .darkAqua)
+        
         popover.behavior = .transient
         popover.contentSize = NSSize(width: 320, height: 520)
         popover.appearance = NSAppearance(named: .darkAqua)
@@ -125,8 +137,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
     
-    private func showOnboardingWindow() {
+    @objc private func handleTriggerOnboarding() {
+        showOnboardingWindow()
+    }
+    
+    @objc func showDashboardWindow() {
+        // If window exists and is still visible, just bring it forward
+        if let existing = dashboardWindow, existing.isVisible {
+            existing.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        // Otherwise create a new window
+        let view = ScheduleDashboardView()
+            .environmentObject(model)
+            .environmentObject(daemon)
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 450),
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Smart Charging Dashboard"
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: view)
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+
+        self.dashboardWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func showOnboardingWindow() {
         NSLog("[Glide] showOnboardingWindow() called")
+        
+        // Close the popover first so it doesn't steal focus from the onboarding window
+        if popover.isShown {
+            NSLog("[Glide] Closing popover")
+            popover.performClose(nil)
+        }
         
         // If window exists and is still visible, just bring it forward
         if let existing = onboardingWindow, existing.isVisible {
@@ -229,7 +282,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if parts.isEmpty {
             button.title = ""
         } else {
-            button.title = " " + parts.joined(separator: "  ")
+            let isHeatProtecting = UserDefaults.standard.bool(forKey: "isHeatProtecting")
+            let isSailing = UserDefaults.standard.bool(forKey: "isSailing")
+            
+            var finalTitle = parts.joined(separator: "  ")
+            if isHeatProtecting {
+                finalTitle = "🌡️ " + finalTitle
+            } else if isSailing {
+                finalTitle = "⛵️ " + finalTitle
+            }
+            
+            button.title = " " + finalTitle
         }
     }
     
@@ -358,13 +421,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         return level
     }
 
-    @objc private func togglePopover() {
-        guard let button = statusItem?.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
-        } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
+    @objc func togglePopover(_ sender: AnyObject?) {
+        if let button = statusItem?.button {
+            if popover.isShown {
+                popover.performClose(sender)
+            } else {
+                popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+        }
+    }
+    
+    @objc func showPopover() {
+        // Don't show the popover if onboarding is still active
+        if let onboarding = onboardingWindow, onboarding.isVisible { return }
+        if !popover.isShown {
+            togglePopover(statusItem?.button)
         }
     }
     
@@ -372,34 +444,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     
     func popoverWillShow(_ notification: Notification) {
         model.setUIVisibility(true)
+        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            if let popover = self?.popover, popover.isShown {
+                popover.performClose(nil)
+            }
+        }
     }
     
     func popoverDidClose(_ notification: Notification) {
         model.setUIVisibility(false)
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
+        }
     }
 }
 import Foundation
 import UserNotifications
 
 @MainActor
-class NotificationManager {
+class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
     
-    private init() {
+    private override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
         requestAuthorization()
     }
     
     func requestAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error = error {
                 NSLog("[Glide] Notification authorization error: \(error.localizedDescription)")
             } else {
                 NSLog("[Glide] Notification authorization granted: \(granted)")
             }
         }
+        
+        let approveAction = UNNotificationAction(identifier: "APPROVE_CALIBRATION", title: "Start Calibration", options: .foreground)
+        let denyAction = UNNotificationAction(identifier: "DENY_CALIBRATION", title: "Not Now", options: .destructive)
+        let category = UNNotificationCategory(identifier: "CALIBRATION_INVITE", actions: [approveAction, denyAction], intentIdentifiers: [], options: [])
+        
+        center.setNotificationCategories([category])
     }
     
-    func sendNotification(title: String, body: String, identifier: String = UUID().uuidString) {
+    func sendNotification(title: String, body: String, identifier: String = UUID().uuidString, categoryIdentifier: String? = nil) {
         let isEnabled = UserDefaults.standard.bool(forKey: "systemNotifications")
         guard isEnabled else { return }
         
@@ -407,6 +497,9 @@ class NotificationManager {
         content.title = title
         content.body = body
         content.sound = .default
+        if let cat = categoryIdentifier {
+            content.categoryIdentifier = cat
+        }
         
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
         
@@ -417,5 +510,28 @@ class NotificationManager {
                 NSLog("[Glide] Notification sent: \(title)")
             }
         }
+    }
+    
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
+    
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.actionIdentifier == "APPROVE_CALIBRATION" {
+            DispatchQueue.main.async {
+                let defaults = UserDefaults.standard
+                defaults.set(1, forKey: "calibrationPhase")
+                defaults.set(true, forKey: "calibrationCycleEnabled")
+                defaults.set(Date().timeIntervalSince1970, forKey: "lastCalibrationDate")
+            }
+        } else if response.actionIdentifier == "DENY_CALIBRATION" {
+            DispatchQueue.main.async {
+                // Postpone for another day
+                let defaults = UserDefaults.standard
+                let tomorrow = Date().addingTimeInterval(86400).timeIntervalSince1970
+                defaults.set(tomorrow, forKey: "lastCalibrationDate")
+            }
+        }
+        completionHandler()
     }
 }

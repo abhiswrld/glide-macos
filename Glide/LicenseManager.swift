@@ -36,11 +36,14 @@ final class LicenseManager: ObservableObject {
     @Published var status: LicenseStatus = .unverified
     
     var isPro: Bool {
-        return true // TEMPORARY DEV OVERRIDE
+        if case .licensed = status { return true }
+        if case .earlyAdopter = status { return true }
+        return false
     }
     
     private let serviceName = "com.glide.license"
     private let accountName = "glide_pro_key"
+    private let instanceAccountName = "glide_pro_instance_id"
     
     private init() {
         checkStatus()
@@ -64,6 +67,7 @@ final class LicenseManager: ObservableObject {
             // No key, default to early adopter or unverified
             // In a real release, new users are unverified.
             self.status = .unverified
+            disableProFeatures()
         }
     }
     
@@ -86,6 +90,9 @@ final class LicenseManager: ObservableObject {
         
         if response.isSuccessful {
             saveKeyToKeychain(key: trimmedKey)
+            if let instanceId = response.instance?.id {
+                saveInstanceToKeychain(instanceId: instanceId)
+            }
             self.status = .licensed(key: trimmedKey)
         } else {
             let errorMsg = response.error ?? "Invalid license key."
@@ -111,16 +118,46 @@ final class LicenseManager: ObservableObject {
         if response.isSuccessful == false {
             // Key was revoked or expired
             removeKeyFromKeychain()
+            removeInstanceFromKeychain()
             self.status = .unverified
+            disableProFeatures()
             if let errorMsg = response.error {
                 self.status = .error(errorMsg)
             }
         }
     }
     
-    func deactivateLicense() {
+    func deactivateLicense() async {
+        if let key = loadKeyFromKeychain(), let instanceId = loadInstanceFromKeychain() {
+            let url = URL(string: "https://api.lemonsqueezy.com/v1/licenses/deactivate")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            
+            let bodyString = "license_key=\(key)&instance_id=\(instanceId)"
+            request.httpBody = bodyString.data(using: .utf8)
+            
+            _ = try? await URLSession.shared.data(for: request)
+        }
+        
         removeKeyFromKeychain()
-        status = .unverified
+        removeInstanceFromKeychain()
+        self.status = .unverified
+        
+        disableProFeatures()
+    }
+    
+    private func disableProFeatures() {
+        // Disable Pro features so they don't run in the background without a license
+        UserDefaults.standard.set(false, forKey: "smartChargingEnabled")
+        UserDefaults.standard.set(false, forKey: "sailingEnabled")
+        UserDefaults.standard.set(false, forKey: "heatProtectionEnabled")
+        UserDefaults.standard.set(false, forKey: "forceDischargeEnabled")
+        // Don't forcefully switch icon here, users might prefer standard icon anyway.
+        // Actually, if we reset it, they might lose custom icon choice.
+        // Let's reset to standard to be safe.
+        UserDefaults.standard.set("standard", forKey: "menuBarIcon")
     }
     
     // MARK: - Keychain
@@ -161,6 +198,45 @@ final class LicenseManager: ObservableObject {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
             kSecAttrAccount as String: accountName
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+    
+    private func saveInstanceToKeychain(instanceId: String) {
+        let data = instanceId.data(using: .utf8)!
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceName,
+            kSecAttrAccount as String: instanceAccountName,
+            kSecValueData as String: data
+        ]
+        SecItemDelete(query as CFDictionary)
+        SecItemAdd(query as CFDictionary, nil)
+    }
+    
+    private func loadInstanceFromKeychain() -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceName,
+            kSecAttrAccount as String: instanceAccountName,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        if status == errSecSuccess, let data = dataTypeRef as? Data {
+            return String(data: data, encoding: .utf8)
+        }
+        return nil
+    }
+    
+    private func removeInstanceFromKeychain() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceName,
+            kSecAttrAccount as String: instanceAccountName
         ]
         SecItemDelete(query as CFDictionary)
     }
