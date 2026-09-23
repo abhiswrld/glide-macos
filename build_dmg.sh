@@ -28,19 +28,22 @@ SIGN_IDENTITY="EA7232703AB7C8D9D5AB19476F4C96C3A56212BD"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 cp AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 
-# IMPORTANT: Code signing must go inside-out.
-# 1. Sign the daemon FIRST with its correct Mach service identifier.
-# 2. Sign the main app bundle LAST (without --deep!) so it creates
-#    a seal over the already-signed daemon. Using --deep would re-sign
-#    the daemon with the wrong default identifier AND then the outer
-#    seal would mismatch if we re-signed the daemon again after.
+# IMPORTANT: Code signing must go inside-out properly.
+# 1. Sign everything with --deep first so Sparkle and other frameworks get signed.
+echo "🔑 Deep signing app bundle to sign frameworks (Sparkle, etc)..."
+codesign --force --sign "$SIGN_IDENTITY" --options runtime --deep "$APP_BUNDLE"
+
+# 2. --deep clobbers the daemon's required identifier. We MUST re-sign the daemon
+#    with its correct Mach service identifier.
 DAEMON_PATH="$APP_BUNDLE/Contents/MacOS/glide-daemon"
 if [ -f "$DAEMON_PATH" ]; then
-    echo "🔑 Signing daemon with correct identifier and Team ID..."
+    echo "🔑 Re-signing daemon with correct identifier and Team ID..."
     codesign --force --sign "$SIGN_IDENTITY" --identifier "com.abhinav.glide-daemon" --options runtime "$DAEMON_PATH"
 fi
 
-echo "🔑 Signing main app bundle with Team ID..."
+# 3. Because we modified the daemon's signature, the outer app's seal is broken.
+#    Re-sign the outer app bundle ONLY (without --deep) to create a valid seal.
+echo "🔑 Re-sealing main app bundle..."
 codesign --force --sign "$SIGN_IDENTITY" --options runtime "$APP_BUNDLE"
 
 DMG_NAME="${APP_NAME}.dmg"
