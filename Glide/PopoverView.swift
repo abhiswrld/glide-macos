@@ -614,9 +614,6 @@ struct PopoverView: View {
                         
                         HStack(spacing: 6) {
                             Spacer()
-                            Image(systemName: "calendar")
-                                .foregroundStyle(.tertiary)
-                                .font(.system(size: 13))
                             Text(nextChargeString(for: predictedTime, level: targetLimit))
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -644,16 +641,18 @@ struct PopoverView: View {
                                 HStack {
                                     Spacer().frame(width: 40)
                                     HStack(spacing: 4) {
-                                        Image(systemName: "bolt.fill")
-                                            .font(.system(size: 9))
                                         Text("Approx \(timeStr) to reach target")
                                             .font(.footnote.weight(.medium))
                                     }
                                     .foregroundStyle(GlideTheme.purple)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 3)
-                                    .background(GlideTheme.purple.opacity(0.12))
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color.black.opacity(0.25))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                            .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                                    )
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.trailing, 12)
                                 }
