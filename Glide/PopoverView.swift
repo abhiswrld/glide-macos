@@ -612,16 +612,36 @@ struct PopoverView: View {
                         let targetLimit = smartCharging.predictedChargeLevel ?? 100
                         let isCharging = model.snapshot?.isCharging == true
                         
-                        HStack(spacing: 6) {
-                            Spacer()
+                        VStack(spacing: 4) {
                             Text(nextChargeString(for: predictedTime, level: targetLimit))
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
-                            Spacer()
+                                .font(.subheadline)
+                            
+                            if isCharging && percent < targetLimit {
+                                let minutes = model.snapshot?.timeRemainingMinutes ?? 0
+                                let hrs = minutes / 60
+                                let mins = minutes % 60
+                                let timeStr = percent == 99 ? "2-3m" : (hrs > 0 ? "\(hrs)h \(mins)m" : "\(mins)m")
+                                
+                                if percent == 99 || minutes > 0 {
+                                    Text("Approx \(timeStr) to reach target")
+                                        .font(.footnote.weight(.medium))
+                                        .foregroundStyle(GlideTheme.purple)
+                                }
+                            } else if percent >= targetLimit {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 9))
+                                    Text("Target reached (0 mins)")
+                                        .font(.footnote.weight(.medium))
+                                }
+                                .foregroundStyle(GlideTheme.signalGreen)
+                            }
                         }
-                        .font(.subheadline)
                         .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.25))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .overlay(
@@ -630,51 +650,6 @@ struct PopoverView: View {
                         )
                         .padding(.top, 4)
                         .padding(.bottom, 4)
-                        
-                        if isCharging && percent < targetLimit {
-                            let minutes = model.snapshot?.timeRemainingMinutes ?? 0
-                            let hrs = minutes / 60
-                            let mins = minutes % 60
-                            let timeStr = percent == 99 ? "2-3m" : (hrs > 0 ? "\(hrs)h \(mins)m" : "\(mins)m")
-                            
-                            if percent == 99 || minutes > 0 {
-                                HStack {
-                                    Spacer().frame(width: 40)
-                                    HStack(spacing: 4) {
-                                        Text("Approx \(timeStr) to reach target")
-                                            .font(.footnote.weight(.medium))
-                                    }
-                                    .foregroundStyle(GlideTheme.purple)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 4)
-                                    .background(Color.black.opacity(0.25))
-                                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                            .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
-                                    )
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.trailing, 12)
-                                }
-                            }
-                        } else if percent >= targetLimit {
-                            HStack {
-                                Spacer().frame(width: 40)
-                                HStack(spacing: 4) {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 9))
-                                    Text("Target reached (0 mins)")
-                                        .font(.footnote.weight(.medium))
-                                }
-                                .foregroundStyle(GlideTheme.signalGreen)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(GlideTheme.signalGreen.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.trailing, 12)
-                            }
-                        }
                     } else {
                         HStack {
                             Text("Learning your schedule...")
