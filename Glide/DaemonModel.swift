@@ -58,7 +58,11 @@ final class DaemonModel: ObservableObject {
             Task { @MainActor in
                 guard let m = DaemonModel.shared else { return }
                 m.isConnected = true
-                m.limit = limit >= 0 ? limit : nil
+                if limit < 0 {
+                    m.setLimit(80)
+                } else {
+                    m.limit = limit
+                }
             }
         }
         p.getLimit(withReply: onReply)
