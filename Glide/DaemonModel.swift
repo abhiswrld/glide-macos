@@ -58,8 +58,15 @@ final class DaemonModel: ObservableObject {
             Task { @MainActor in
                 guard let m = DaemonModel.shared else { return }
                 m.isConnected = true
+                
+                let savedLimit = UserDefaults.standard.integer(forKey: "userSetChargeLimit")
+                
                 if limit < 0 {
+                    // Fresh install
                     m.setLimit(80)
+                } else if limit == 100 && savedLimit >= 60 && savedLimit < 100 {
+                    // Restore previously saved limit on launch if the daemon was reset to 100
+                    m.setLimit(savedLimit)
                 } else {
                     m.limit = limit
                 }
@@ -73,6 +80,10 @@ final class DaemonModel: ObservableObject {
         // UI moves instantly; on a real error we re-sync from the daemon
         limit = value
         lastError = nil
+        
+        if value >= 60 && value < 100 {
+            UserDefaults.standard.set(value, forKey: "userSetChargeLimit")
+        }
 
         let p = proxy
         let onReply: (String?) -> Void = { error in

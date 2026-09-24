@@ -78,6 +78,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         
         checkDaemonSetup()
     }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        NSLog("[Glide] applicationWillTerminate: restoring charge limit to 100%")
+        let group = DispatchGroup()
+        group.enter()
+        
+        let connection = NSXPCConnection(machServiceName: GlideXPC.serviceName, options: .privileged)
+        connection.remoteObjectInterface = NSXPCInterface(with: GlideDaemonProtocol.self)
+        connection.resume()
+        
+        let proxy = connection.remoteObjectProxyWithErrorHandler { _ in
+            group.leave()
+        } as? GlideDaemonProtocol
+        
+        proxy?.setLimit(100) { _ in
+            group.leave()
+        }
+        
+        _ = group.wait(timeout: .now() + 1.0)
+        connection.invalidate()
+    }
     
     private func checkDaemonSetup() {
         let daemonPath = "/Library/PrivilegedHelperTools/glide-daemon"
